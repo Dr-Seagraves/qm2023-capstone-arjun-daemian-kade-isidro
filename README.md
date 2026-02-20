@@ -4,6 +4,12 @@
 
 Semester-long capstone for Statistics II: Data Analytics.
 
+Team Name: Arjun, Daemian, Kade, Isidro
+
+Research Question: How does perceived corruption and crime of a country affect countries foreign investment based on Corruption Percentage Index, Foreign Direct Investment, Crime Index, and Economic Uncertainty worldwide?
+
+Goal: We  want to establish a relationship between corruption and/or foreign direct investment and crime, which can then be used to address the associated economic effects of corruption.
+
 ## Project Structure
 
 - **code/** — Python scripts and notebooks. Use `config_paths.py` for paths.
@@ -16,10 +22,3 @@ Semester-long capstone for Statistics II: Data Analytics.
 - **tests/** — Autograding test suite
 
 Run `python code/config_paths.py` to verify paths.
-
-
-Team Name: Arjun, Daemian, Kade, Isidro
-
-Research Question: How does perceived corruption and crime of a country affect countries foreign investment based on Corruption Percentage Index, Foreign Direct Investment, Crime Index, and Economic Uncertainty worldwide?
-
-Goal: We  want to establish a relationship between corruption and/or foreign direct investment and crime, which can then be used to address the associated economic effects of corruption.

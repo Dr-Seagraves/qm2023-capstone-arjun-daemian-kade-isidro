@@ -54,4 +54,5 @@ Goal: We  want to establish a relationship between corruption and/or foreign dir
 - **results/reports/** — Milestone memos
 - **tests/** — Autograding test suite
 
-Run `python src/config_paths.py` to verify paths.
+Run `python code/config_paths.py` to verify paths.
+test

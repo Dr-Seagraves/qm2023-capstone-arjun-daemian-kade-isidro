@@ -6,7 +6,7 @@ Semester-long capstone for Statistics II: Data Analytics.
 
 Team Name: Arjun, Daemian, Kade, Isidro
 
-Research Question: How does perceived corruption and crime of a country affect countries foreign investment based on Corruption Percentage Index, Foreign Direct Investment, Crime Index, and Economic Uncertainty worldwide?
+Research Question: How does perceived corruption and crime of a country affect countries foreign investment based on Corruption Perceived Index, Foreign Direct Investment, Crime Index, and Economic Uncertainty worldwide?
 
 
 ## Installation
@@ -37,6 +37,18 @@ The crime index data includes perceived crime and safety metrics for countries w
 - **Coverage:** 1960-2024
 - **Metric:** Foreign direct investment, net inflows (BoP, current US$)
 - **Countries:** 266 countries/regions
+
+### Corruption Perceptions Index (CPI) Data
+- **Source:** Transparency International
+- **Raw File:** `data/raw/corruption_perceptions_index_raw.csv` (requires manual download)
+- **Template:** `data/raw/CPI_template.csv`
+- **Processed Files:**
+  - `data/processed/corruption_perceptions_index_processed.csv` — Long format (Country, Year, CPI_Score)
+  - `data/processed/corruption_perceptions_index_wide.csv` — Wide format (Countries as rows, years as columns)
+- **Coverage:** 2012-present
+- **Metric:** Corruption Perceptions Index Score (0-100 scale, higher = less corruption)
+- **Countries:** ~180+ countries
+- **Status:** ⚠️ Requires manual download from Transparency International
 
 ## Fetching and Processing Data
 
@@ -73,6 +85,32 @@ python src/reverse_transpose_fdi.py
 python src/transpose_fdi_data.py
 ```
 
+### Corruption Perceptions Index (CPI) Data
+
+CPI data requires manual download from Transparency International since it's not available via API.
+
+**Steps to get CPI data:**
+
+1. Download CPI rankings (2012-present) from one of these sources:
+   - **Official:** https://www.transparency.org/en/cpi/ (recommended)
+   - **World Bank DataBank:** https://databank.worldbank.org/
+   - **Kaggle:** https://www.kaggle.com/datasets (search "corruption perceptions index")
+
+2. Save the downloaded file to: `data/raw/corruption_perceptions_index_raw.csv`
+
+3. Ensure the file has these columns: `Country`, `Year`, `CPI_Score`
+
+4. Process the data:
+   ```bash
+   python src/process_cpi_data.py
+   ```
+
+5. This will generate:
+   - `data/processed/corruption_perceptions_index_processed.csv` (long format)
+   - `data/processed/corruption_perceptions_index_wide.csv` (wide format)
+
+A template file is available at `data/raw/CPI_template.csv` showing the expected format.
+
 
 Goal: Establish a relationship between corruption and/or foreign direct investment and crime, which can then be used to address the associated economic effects of corruption.
 
@@ -91,6 +129,15 @@ Goal: Establish a relationship between corruption and/or foreign direct investme
 - **Formats Available:**
   - Wide format: Countries as rows, years as columns (266 × 65)
   - Long-wide format: Years as rows, countries as columns (65 × 266)
+
+### Corruption Perceptions Index
+- **Years:** 2012-2024
+- **Countries:** ~180+ countries
+- **Metric:** CPI Score (0-100 scale, higher = less corruption)
+- **Formats Available:**
+  - Long format: Country, Year, CPI_Score
+  - Wide format: Countries as rows, years as columns
+- **Status:** Ready after manual download & processing
 
 ## Running Tests
 

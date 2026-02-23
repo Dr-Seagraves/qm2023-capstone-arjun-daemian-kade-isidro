@@ -47,8 +47,10 @@ PROJECT_ROOT = find_project_root()
 # DIRECTORY PATHS
 # ==============================================================================
 
-# Code directory
-CODE_DIR = PROJECT_ROOT / 'code'
+# Source directory (renamed from 'code' to avoid standard library conflicts)
+SRC_DIR = PROJECT_ROOT / 'src'
+# backwards compatibility alias
+CODE_DIR = SRC_DIR
 
 # Data directories
 DATA_DIR = PROJECT_ROOT / 'data'
@@ -69,7 +71,7 @@ REPORTS_DIR = RESULTS_DIR / 'reports'
 def ensure_directories():
     """Create all necessary directories if they don't exist."""
     directories = [
-        CODE_DIR,
+        SRC_DIR,
         RAW_DATA_DIR,
         PROCESSED_DATA_DIR,
         FINAL_DATA_DIR,

@@ -1,4 +1,24 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"c:\\\\Users\\\\isidr\\\\Statistics II\\\\qm2023-capstone-arjun-daemian-kade-isidro\"; python -m pytest tests/test_fetch_crime_index\\.py -q$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd \"c:\\\\Users\\\\isidr\\\\Statistics II\\\\qm2023-capstone-arjun-daemian-kade-isidro\"; python -m pytest tests/test_fetch_crime_index\\.py -v$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "type": true,
+        "more": true,
+        "/^cd \"c:\\\\Users\\\\isidr\\\\Statistics II\\\\qm2023-capstone-arjun-daemian-kade-isidro\"; python -m pytest tests/test_fetch_crime_index\\.py::test_fetch_range -q$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd \"c:\\\\Users\\\\isidr\\\\Statistics II\\\\qm2023-capstone-arjun-daemian-kade-isidro\"; python -m src\\.transform_crime_index data/raw/numbeo_crime_index_2012_2025\\.csv --out data/processed/crime_index_wide\\.csv$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }

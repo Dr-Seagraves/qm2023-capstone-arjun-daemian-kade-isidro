@@ -1,8 +1,14 @@
 """Unit tests for :mod:`fetch_crime_index`."""
 
 from pathlib import Path
+import sys
 import pandas as pd
 import pytest
+
+# ensure top‑level workspace directory is on sys.path so that `src` package
+# can be imported when pytest runs from within the venv.
+root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(root))
 
 from src import fetch_crime_index as fc
 

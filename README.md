@@ -8,6 +8,8 @@ Team Name: Arjun, Daemian, Kade, Isidro
 
 Research Question: How does perceived corruption and crime of a country affect countries foreign investment based on Corruption Percentage Index, Foreign Direct Investment, Crime Index, and Economic Uncertainty worldwide?
 
+Hypotheses: We expect to find that as corruption increases, foreign investment decreases. We also expect that crime rates have an impact on economic uncertainty. The biggest factor that we believe would determine a nation's foreign investment, of the ones we have chosen, is perceived corruption through the Corruption Percentage Index.
+
 
 ## Fetching Crime Index Data
 

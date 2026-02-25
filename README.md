@@ -15,6 +15,21 @@ We include a utility module in ``src/fetch_crime_index.py`` that can download
 and parse the Numbeo Crime Index table.  The script is generic enough that you
 can point it at any similar HTML table.
 
+## World Foreign Investment Inflow Data
+
+Downloaded from worldbank.org
+https://data.worldbank.org/indicator/BX.KLT.DINV.CD.WD
+
+## World Economic Uncertaincy Data
+
+Downloaded from policyuncertaincy.com
+https://www.policyuncertainty.com/all_country_data.html
+
+## Percieved Corruption Index Data
+
+Downloaded from transparency.org
+https://www.transparency.org/en/
+
 Install the dependencies before running:
 
 ```bash

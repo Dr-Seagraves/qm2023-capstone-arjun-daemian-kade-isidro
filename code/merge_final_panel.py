@@ -9,6 +9,25 @@ DATA_DIR = BASE_DIR / "data"
 PROCESSED_DIR = DATA_DIR / "processed"
 FINAL_DIR = DATA_DIR / "final"
 
+COUNTRY_NAME_MAP = {
+    "US": "United States",
+    "United States of America": "United States",
+    "UK": "United Kingdom",
+    "Korea": "South Korea",
+    "Korea, South": "South Korea",
+    "Korea, North": "North Korea",
+    "Czechia": "Czech Republic",
+    "Bosnia and Herzegovina": "Bosnia And Herzegovina",
+    "Brunei Darussalam": "Brunei",
+    "Viet Nam": "Vietnam",
+    "Russian Federation": "Russia",
+    "Iran, Islamic Republic of": "Iran"
+}
+
+
+def harmonize_country_series(country_series: pd.Series) -> pd.Series:
+    return country_series.astype(str).str.strip().replace(COUNTRY_NAME_MAP)
+
 # Create final directory if it doesn't exist
 FINAL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -31,6 +50,10 @@ print(f"Foreign investment data shape: {fi_df.shape}")
 gepu_df = pd.read_csv(PROCESSED_DIR / "january_2012_onwards.csv")
 print(f"GEPU data shape: {gepu_df.shape}")
 
+# Load CPI cleaned data (Country as rows, yearly CPI columns)
+cpi_df = pd.read_csv(PROCESSED_DIR / "CPI2025_Results_clean.csv")
+print(f"CPI data shape: {cpi_df.shape}")
+
 # Section 3: Align time variables
 print("\nSection 3: Aligning time variables and restructuring data...")
 
@@ -38,6 +61,7 @@ print("\nSection 3: Aligning time variables and restructuring data...")
 # Year is already in rows, countries are columns
 crime_long = crime_df.melt(id_vars=['Year'], var_name='Country', value_name='crime_index')
 crime_long = crime_long.dropna(subset=['crime_index'])
+crime_long['Country'] = harmonize_country_series(crime_long['Country'])
 print(f"Crime index (long format): {crime_long.shape}")
 
 # Transform foreign investment from wide to long format
@@ -45,11 +69,13 @@ fi_long = fi_df.melt(id_vars=['Country'], var_name='Year', value_name='foreign_i
 fi_long['Year'] = pd.to_numeric(fi_long['Year'], errors='coerce')
 fi_long = fi_long.dropna(subset=['Year', 'foreign_investment'])
 fi_long['Year'] = fi_long['Year'].astype(int)
+fi_long['Country'] = harmonize_country_series(fi_long['Country'])
 print(f"Foreign investment (long format): {fi_long.shape}")
 
 # For GEPU data: filter for January only (Month == 1.0) to get one entry per year
 gepu_january = gepu_df[gepu_df['Month'] == 1.0].copy()
 gepu_january['Year'] = gepu_january['Year'].astype(int)
+gepu_january = gepu_january.rename(columns=COUNTRY_NAME_MAP)
 
 # Melt GEPU data to long format (exclude Year, Month, GEPU indices)
 gepu_cols = [col for col in gepu_january.columns if col not in ['Year', 'Month', 'GEPU_current', 'GEPU_ppp']]
@@ -58,6 +84,29 @@ gepu_long['Year'] = gepu_long['Year'].astype(int)
 
 print(f"GEPU (January only): {gepu_long.shape}")
 print(f"GEPU countries: {gepu_cols}")
+
+# Transform CPI data from wide to long format
+# Support both 'CPI score YYYY' and legacy 'CPI Score YYYY' column styles
+cpi_score_cols = [
+    col for col in cpi_df.columns
+    if col.startswith('CPI score ') or col.startswith('CPI Score ')
+]
+
+cpi_long = cpi_df[['Country / Territory'] + cpi_score_cols].copy()
+cpi_long = cpi_long.melt(
+    id_vars=['Country / Territory'],
+    var_name='cpi_metric_year',
+    value_name='cpi_score'
+)
+cpi_long = cpi_long.rename(columns={'Country / Territory': 'Country'})
+cpi_long['Year'] = cpi_long['cpi_metric_year'].str.extract(r'(\d{4})')[0]
+cpi_long['Year'] = pd.to_numeric(cpi_long['Year'], errors='coerce')
+cpi_long = cpi_long.dropna(subset=['Year', 'cpi_score'])
+cpi_long['Year'] = cpi_long['Year'].astype(int)
+cpi_long['Country'] = harmonize_country_series(cpi_long['Country'])
+cpi_long = cpi_long[['Country', 'Year', 'cpi_score']]
+
+print(f"CPI (long format): {cpi_long.shape}")
 
 # Section 4: Merge datasets
 print("\nSection 4: Merging datasets...")
@@ -107,6 +156,11 @@ panel = panel.merge(gepu_long[['Country', 'Year', 'gepu']],
                     on=['Country', 'Year'], 
                     how='left')
 
+# Add CPI score
+panel = panel.merge(cpi_long[['Country', 'Year', 'cpi_score']],
+                    on=['Country', 'Year'],
+                    how='left')
+
 print(f"Merged panel shape: {panel.shape}")
 print(f"Panel columns: {panel.columns.tolist()}")
 
@@ -144,10 +198,11 @@ print("\nSection 7: Creating data dictionary...")
 data_dictionary = """# Data Dictionary for analysis_panel.csv
 
 ## Overview
-This dataset contains merged information from three sources:
+This dataset contains merged information from four sources:
 - Crime Index (Numbeo)
 - Foreign Direct Investment (World Bank)
 - Geopolitical Risk Index (GEPU)
+- Corruption Perceptions Index (Transparency International)
 
 Data is structured as a panel dataset with countries as units and years as time periods.
 
@@ -162,7 +217,7 @@ Data is structured as a panel dataset with countries as units and years as time 
 ### Year
 - **Description**: Year of observation
 - **Type**: Integer
-- **Range**: 2012-2024 (aligned to January observation for multi-month datasets)
+- **Range**: 2012-2025 (aligned to January observation for multi-month datasets)
 - **Missing**: None
 
 ### crime_index
@@ -189,12 +244,22 @@ Data is structured as a panel dataset with countries as units and years as time 
 - **Note**: Only January values are included to create one observation per year
 - **Missing**: May be present for some Country-Year combinations
 
+### cpi_score
+- **Description**: Corruption Perceptions Index score
+- **Type**: Float
+- **Range**: 0-100 (higher values indicate lower perceived corruption)
+- **Source**: Transparency International CPI 2025 Results (includes historical years)
+- **Note**: Converted from country-level wide format into Country-Year format
+- **Missing**: May be present for some Country-Year combinations due to country-name mismatches or unavailable observations
+
 ## Data Quality Notes
 
 ### Alignment Strategy
 - Crime Index: Available from 2012 onwards
 - Foreign Investment: Available from 1960-2024, filtered to common countries
 - GEPU: Available from 2012 onwards, January values used for annual representation
+- CPI: Available from 2012-2025, transformed from yearly columns to annual panel rows
+- Country names: Harmonized using a shared mapping before merges (e.g., US→United States, UK→United Kingdom, Korea→South Korea)
 
 ### Common Countries
 The dataset includes only countries that are present in all three data sources. 
@@ -205,12 +270,13 @@ The analysis panel covers the period from 2012 to 2024, as this is the common
 period across all three sources.
 
 ## Data Processing Steps
-1. Loaded all three processed datasets
+1. Loaded all four processed datasets
 2. Converted all datasets to long format (Country, Year, Values)
-3. Filtered datasets to include only common countries across all three sources
+3. Filtered crime/FDI/GEPU datasets to include only common countries across those three sources
 4. For GEPU (which has monthly data), selected January values to create annual observations
-5. Merged datasets using left join on Country and Year combinations
-6. Saved final panel to data/final/analysis_panel.csv
+5. Converted CPI yearly score columns into a Country-Year `cpi_score` variable
+6. Merged datasets using left join on Country and Year combinations
+7. Saved final panel to data/final/analysis_panel.csv
 
 ## Generated
 {timestamp}

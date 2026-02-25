@@ -1,205 +1,122 @@
-"""Utilities for loading and cleaning World Bank foreign
-investment‑inflow data.
+"""Fetch and process World Foreign Direct Investment inflow raw file.
 
-The raw file in ``data/raw/WorldForeignDirectInvestmentInflow`` is a
-wide-format table where each row corresponds to a country or aggregate and
-columns contain years from 1960 through the most recent update.  The first
-couple of lines include metadata and must be skipped when reading with
-``pandas``.
+This script reads the raw WorldForeignDirectInvestmentInflow file in
+`data/raw`, locates the CSV header row, parses the wide table, handles
+missing values, and writes both a cleaned wide CSV and a tidy (long)
+CSV with columns ``Country``, ``Time``, ``Value`` to ``data/processed``.
 
-Functions in this module perform the following steps:
-
-* read the raw CSV file (skipping the preliminary metadata rows)
-* drop extraneous columns and any unnamed placeholders
-* melt the wide table into a long/panel format with one observation per
-  (country, year) pair
-* convert types, handle missing values and duplicates
-* flag and remove obvious outliers (values more than three standard
-deviations from the country mean)
-
-Example
--------
->>> from src import fetch_foreign_investment as ffi
->>> df = ffi.load_foreign_investment()
->>> df.head()
-     Entity  Time         Value
-0     Aruba  1980  0.000000e+00
-1     Aruba  1981  1.087876e+06
-...
+Usage (from project root):
+    python code/fetch_[ForeignInvest]_data.py
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
+import re
+from typing import Optional
 
 import pandas as pd
 
 
-# default locations of raw/processed data (uses configuration)
-try:
-    from src.config_paths import RAW_DATA_DIR, PROCESSED_DATA_DIR
-except ImportError:  # pragma: no cover - configuration may not be available
-    RAW_DATA_DIR = Path("data") / "raw"  # fallback, not strict
-    PROCESSED_DATA_DIR = Path("data") / "processed"
+def _find_header_row(path: Path) -> int:
+    """Return number of lines to skip so the header row is the first row read.
 
-DEFAULT_RAW_PATH = RAW_DATA_DIR / "WorldForeignDirectInvestmentInflow"
-# where to write cleaned panel when no explicit output is supplied
-DEFAULT_PROCESSED_FILENAME = "foreign_investment_long.csv"
-
-
-def _read_raw(path: Union[str, Path]) -> pd.DataFrame:
-    """Load the raw CSV skipping the metadata header rows.
-
-    Parameters
-    ----------
-    path : str or Path
-        Path to the raw input file.  The function does not assume a particular
-        file extension because the source file in ``data/raw`` lacks one.
-
-    Returns
-    -------
-    pd.DataFrame
-        Wide-format table with a row for each country/aggregate and a column
-        for every year.
+    The raw file contains metadata lines before the CSV header. We look for
+    the line that contains the header field "Country Name" and return the
+    count of lines to skip so pandas will treat the next line as header.
     """
-    p = Path(path)
-    # the first three meaningful lines are metadata; skip them so that
-    # pandas sees the proper column names on the first row.
-    df = pd.read_csv(p, skiprows=3)
-    # drop any columns pandas created for stray delimiters
-    df = df.loc[:, ~df.columns.str.contains(r"^Unnamed")]  # type: ignore
+    with path.open("r", encoding="utf-8", errors="replace") as fh:
+        for i, line in enumerate(fh):
+            if "Country Name" in line or "Country" in line and "Indicator Name" in line:
+                # skip the lines before this one so the header is read next
+                return i
+    return 0
+
+
+def read_raw_foreign_investment(raw_path: Path) -> pd.DataFrame:
+    """Read the raw WorldForeignDirectInvestmentInflow file into a DataFrame.
+
+    The function attempts to locate the header row automatically. The
+    returned DataFrame contains one column per year (strings) plus
+    descriptive columns like `Country Name`.
+    """
+    raw_path = Path(raw_path)
+    if not raw_path.exists():
+        raise FileNotFoundError(f"raw file not found: {raw_path}")
+
+    skip = _find_header_row(raw_path)
+    # pandas: skip the first `skip` rows, then treat the next row as header
+    df = pd.read_csv(raw_path, skiprows=skip, dtype=str, encoding="utf-8")
     return df
 
 
-def _melt_to_long(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert a wide, year‑column table into long panel format.
+def clean_and_reshape(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean the wide DataFrame and produce (wide_df, tidy_df).
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Output from :func:`_read_raw`.
-
-    Returns
-    -------
-    pd.DataFrame
-        Long-format DataFrame with columns ``['Entity', 'Time', 'Value']``.
+    - Rename `Country Name` -> `Country`.
+    - Drop helper columns like `Country Code`, `Indicator Name`, `Indicator Code`.
+    - Convert year columns to numeric values.
+    - Produce a tidy (long) DataFrame with columns ``Country, Time, Value``.
     """
-    # expect the raw file to have these columns; don't fail loudly if they are
-    # missing but rename when present.
-    name_col = "Country Name" if "Country Name" in df.columns else "Entity"
-    df = df.rename(columns={name_col: "Entity"})
+    df = df.copy()
 
-    # identify year columns (they should be convertible to integers)
-    year_cols = [c for c in df.columns if c not in ["Entity", "Country Code"]]
-    # melt the dataset
-    long = df.melt(id_vars=["Entity"], value_vars=year_cols, var_name="Time", value_name="Value")
+    # normalize country column
+    if "Country Name" in df.columns:
+        df = df.rename(columns={"Country Name": "Country"})
+    elif "Country" in df.columns:
+        df = df.rename(columns={"Country": "Country"})
 
-    # convert types
-    long["Time"] = pd.to_numeric(long["Time"], errors="coerce").astype("Int64")
-    long["Value"] = pd.to_numeric(long["Value"], errors="coerce")
+    # drop unwanted meta columns if present
+    for col in ["Country Code", "Indicator Name", "Indicator Code"]:
+        if col in df.columns:
+            df = df.drop(columns=col)
 
-    return long
+    # detect year columns (four-digit year names)
+    year_cols = [c for c in df.columns if re.fullmatch(r"\d{4}", str(c))]
 
+    # convert year columns to numeric (coerce bad values to NaN)
+    for c in year_cols:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
 
-def _clean(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply basic cleaning rules to a long-format DataFrame.
+    # tidy (long) format
+    # ensure wide is sorted by Country
+    wide = df.set_index("Country").sort_index()
 
-    * drop rows with missing entity or year
-    * remove duplicates
-    * drop outliers (more than three standard deviations from the entity mean)
-    * drop rows with missing ``Value`` so that the returned table contains
-      only observed inflows.  We still do not impute values.
-    """
-    df = df.dropna(subset=["Entity", "Time"])
-    df = df.drop_duplicates()
-
-    # remove outliers without dropping the Entity column; groupby.apply drops the
-    # key so we instead compute a mask using group transforms.
-    if "Value" in df.columns and df["Value"].dtype.kind in "fi":
-        grp = df.groupby("Entity")["Value"]
-        mu = grp.transform("mean")
-        sigma = grp.transform("std")
-        # mask keeps rows where sigma is NaN (e.g. only one value) or zero
-        # or where the value is within 3 std devs of the mean
-        mask = sigma.isna() | sigma.eq(0) | ((df["Value"] - mu).abs() <= 3 * sigma)
-        df = df.loc[mask]
-
-    # drop entries that have no numeric value; this ensures the output file
-    # contains only rows with actual inflow numbers.
-    if "Value" in df.columns:
-        df = df.dropna(subset=["Value"])
-
-    df = df.reset_index(drop=True)
-    return df
+    return wide
 
 
-def load_foreign_investment(
-    path: Union[str, Path, None] = None,
-    output: Union[str, Path, None] = None,
-) -> pd.DataFrame:
-    """Public helper that returns a cleaned, long panel of FDI inflows.
+def save_outputs(wide: pd.DataFrame, out_dir: Path) -> None:
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    Parameters
-    ----------
-    path : str or Path, optional
-        Location of the raw CSV.  If ``None`` the default path defined by
-        ``DEFAULT_RAW_PATH`` is used.
-    output : str or Path, optional
-        If provided, the cleaned DataFrame will be written to this location
-        as a CSV.  If ``None`` the default file
-        ``PROCESSED_DATA_DIR/foreign_investment_long.csv`` will be used.  The
-        saved table will contain only rows where a numeric ``Value`` is
-        available.
+    wide_path = out_dir / "foreign_investment_wide.csv"
+    wide.to_csv(wide_path)
 
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame with columns ``['Entity', 'Time', 'Value']``.
-    """
-    if path is None:
-        path = DEFAULT_RAW_PATH
-    df = _read_raw(path)
-    df = _melt_to_long(df)
-    df = _clean(df)
 
-    # write output if requested (always write by default)
-    if output is None:
-        outp = PROCESSED_DATA_DIR / DEFAULT_PROCESSED_FILENAME
-    else:
-        outp = Path(output)
-    # ensure directory exists
-    outp.parent.mkdir(parents=True, exist_ok=True)
-    # use CSV format
-    df.to_csv(outp, index=False)
+def process(raw_path: Optional[Path] = None, out_dir: Optional[Path] = None) -> Path:
+    if raw_path is None:
+        raw_path = Path("data/raw/WorldForeignDirectInvestmentInflow")
+    if out_dir is None:
+        out_dir = Path("data/processed")
 
-    return df
+    df = read_raw_foreign_investment(raw_path)
+    wide = clean_and_reshape(df)
+    save_outputs(wide, out_dir)
+
+    return out_dir / "foreign_investment_wide.csv"
 
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Load and clean world foreign direct investment inflow data."
-    )
-    parser.add_argument(
-        "input",
-        nargs="?",
-        default=str(DEFAULT_RAW_PATH),
-        help="path to the raw data file",
-    )
-    parser.add_argument(
-        "--out", "-o",
-        help="if provided the cleaned long table will be written to this CSV",
-    )
+    parser = argparse.ArgumentParser(description="Process World Foreign Direct Investment raw file")
+    parser.add_argument("--raw", type=Path, help="raw input file", default=Path("data/raw/WorldForeignDirectInvestmentInflow"))
+    parser.add_argument("--out", type=Path, help="output directory", default=Path("data/processed"))
     args = parser.parse_args()
 
-    # always save to either the user-supplied path or default processed
-    # directory so that downstream steps can rely on a consistent location.
-    if args.out:
-        save_path = Path(args.out)
-    else:
-        save_path = PROCESSED_DATA_DIR / DEFAULT_PROCESSED_FILENAME
-    save_path.parent.mkdir(parents=True, exist_ok=True)
-    result.to_csv(save_path, index=False)
-    print(f"cleaned data written to {save_path}")
+    w = process(raw_path=args.raw, out_dir=args.out)
+    print(f"Wrote: {w}")
+#fetches and loads the raw foreign investment data from the raw data folder
+#handles missing values and reshapes the data into a tidy format with columns Country, Time
+#formats the data in a csv file so each row is a country and its observations, and each column is a year
+#outputs this processed data csv file into the processed data folder

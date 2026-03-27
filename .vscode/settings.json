@@ -1,6 +1,5 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": [],
     "chat.tools.terminal.autoApprove": {
         "/^cd \"c:\\\\Users\\\\isidr\\\\Statistics II\\\\qm2023-capstone-arjun-daemian-kade-isidro\"; python -m pytest tests/test_fetch_crime_index\\.py -q$/": {
             "approve": true,

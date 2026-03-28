@@ -1,0 +1,1 @@
+The heatmap reveals a weak negative correlation (r = 0.14) between foreign investment and CPI score. This makes sense as foreign investment drops as it becomes more apparent that a government is more corrupt. Crime index shows a positive correlation, suggesting that crime in a nation is not a major factor that decreases foreign investment.

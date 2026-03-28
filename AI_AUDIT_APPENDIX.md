@@ -18,3 +18,11 @@ from datetime import datetime
 start = datetime(2015, 1, 1)
 end = datetime(2023, 12, 31)
 fedfunds = pdr.DataReader('FEDFUNDS', 'fred', start, end)
+
+### 2. creating visualizations from cleaned data pipeline.
+
+Prompt: Create visualizations in guidline with the requirements of milestone 2. Add the captions writtin in the text file to each of our graphics
+
+Output: All code written in m2_eda_plots.py, Added captions embedded to the bottom of each visualization.
+
+

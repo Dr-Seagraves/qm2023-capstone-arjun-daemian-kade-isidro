@@ -1,0 +1,1 @@
+China has the highest median outcome, but it is much higher than everyone else, which might show heteroskedasticity. The group with the lowest outcome is Greece, which tracks with Greece's financial issues from 2009 to 2018. Most others have very similar median ranges.

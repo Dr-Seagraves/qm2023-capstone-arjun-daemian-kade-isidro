@@ -1,0 +1,1 @@
+There is something of a clear trend, with relatively regular highs and lows. Seasonal patterns seem strong, as they have a repeating pattern. The residuals resemble the structure of the initial graph.

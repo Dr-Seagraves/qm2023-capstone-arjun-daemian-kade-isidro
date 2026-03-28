@@ -16,3 +16,19 @@ average CPI stays the same.
 
 caption for lagged effect: The optimal lag is 12 years, with shorter periods having weaker correlations. A greater acceptance of the nation that is being invested in opens up the
 country to more foreign investment, only growing as years go by.
+
+caption for group boxplots: China has the highest median outcome, but it is much higher than
+everyone else, which might show heteroskedasticity. The group with the lowest outcome is Greece,
+which tracks with Greece's financial issues from 2009 to 2018. Most others have very similar median ranges
+
+caption for group sensitivity: Singapore, Sweden, and Ireland seem to be the most sensitive to
+CPI, caused by the fact that a change in their CPI alters how people view them financially much more
+than other countries we compared them to. Because of this, we should probably include group and driver 
+interaction terms.
+
+caption for the two scatter plots:
+The scatterplot for the crime index seems to suggest that foreign investment slightly decreases as the the crime rate increases.
+
+the scatterplot for gepu suggests that foreign investment slightly increases as the gepu increases.
+
+caption for the time series decomp: There is something of a clear trend, with relatively regular highs and lows. Seasonal patterns seem strong, as they have a repeating pattern. The residuals resemble the structure of the initial graph.

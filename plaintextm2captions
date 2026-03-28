@@ -1,0 +1,18 @@
+caption for heatmap: The heatmap reveals a weak negative correlation (r = 0.14) between
+foreign_investment and cpi_score. This makes sense as foreign investment drops as
+it becomes more apparent that a government is more corrupt. crime_index shows a positive correlation,
+suggesting that crime in a nation is not a major factor that decreases foreign investment.
+
+caption for outcome time series: 2023 seems to be the worst recent year for overall foreign investment,
+with a sharp drop possibly being caused by the outbreak of the Russian-Ukrainian War. - Note
+2014 was also a time of instability, with a sharp drop before recovering, then evening out into a slight
+drop before 2020.
+
+caption for dual axis outcome: There are periods where the CPI and foreign investment correlate well,
+such as between 2017 and 202, where they both see minor declines, as well as after 2022 when they both
+experience sharp declines. 2016 and 2021 are both years where the relationship breaks down, with 2016
+seeing growth on one and a decline on the other, and 2021 having a sharp increase in investment as
+average CPI stays the same.
+
+caption for lagged effect: The optimal lag is 12 years, with shorter periods having weaker correlations. A greater acceptance of the nation that is being invested in opens up the
+country to more foreign investment, only growing as years go by.

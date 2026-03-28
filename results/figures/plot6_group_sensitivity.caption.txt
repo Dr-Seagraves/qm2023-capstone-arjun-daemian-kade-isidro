@@ -1,0 +1,1 @@
+Singapore, Sweden, and Ireland seem to be the most sensitive to CPI, caused by the fact that a change in their CPI alters how people view them financially much more than other countries we compared them to. Because of this, we should probably include group and driver interaction terms.

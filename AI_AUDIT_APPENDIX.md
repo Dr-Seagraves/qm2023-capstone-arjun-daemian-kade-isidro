@@ -1,28 +1,43 @@
 # AI Audit Appendix: Milestone 1
+
 **Team:** [Your Team Name]
+
 **Date:** [Submission date]
+
 ## AI Tools Used
+
 - [x] ChatGPT
 - [x] GitHub Copilot
 - [ ] Claude
 - [ ] Other: [Specify]
+
 ## Detailed Log
+
 ### 1. pandas-datareader FRED API Integration
+
 **Prompt (ChatGPT):**
-> "How do I use pandas-datareader to fetch the Federal Funds Rate (FEDFUNDS) from
-FRED for the date range 2015-01-01 to 2023-12-31?"
+
+> "How do I use pandas-datareader to fetch the Federal Funds Rate (FEDFUNDS) from FRED for the date range 2015-01-01 to 2023-12-31?"
+
 **AI Output:**
+
 ```python
 import pandas_datareader as pdr
 from datetime import datetime
+
 start = datetime(2015, 1, 1)
 end = datetime(2023, 12, 31)
-fedfunds = pdr.DataReader('FEDFUNDS', 'fred', start, end)
+fedfunds = pdr.DataReader("FEDFUNDS", "fred", start, end)
+```
 
-### 2. creating visualizations from cleaned data pipeline.
+### 2. Creating Visualizations from Cleaned Data Pipeline
 
-Prompt: Create visualizations in guidline with the requirements of milestone 2. Add the captions writtin in the text file to each of our graphics
+**Prompt:**
 
-Output: All code written in m2_eda_plots.py, Added captions embedded to the bottom of each visualization.
+Create visualizations in guideline with the requirements of Milestone 2. Add the captions written in the text file to each of our graphics.
+
+**Output:**
+
+All code written in `m2_eda_plots.py`. Added captions embedded to the bottom of each visualization.
 
 

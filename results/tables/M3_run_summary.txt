@@ -1,0 +1,6 @@
+Milestone 3 model run complete.
+Input panel: /workspaces/qm2023-capstone-arjun-daemian-kade-isidro/data/final/analysis_panel.csv
+Model A observations: 237
+Model B train/test: 200/37
+Tables saved to: /workspaces/qm2023-capstone-arjun-daemian-kade-isidro/results/tables
+Figures saved to: /workspaces/qm2023-capstone-arjun-daemian-kade-isidro/results/figures

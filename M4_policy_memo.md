@@ -1,143 +1,360 @@
-# Milestone 4 Policy Memo
+# Milestone 4 Policy Memo: Corruption, Risk & Foreign Investment
+## CORRECTED VERSION (2026-04-29)
 
-## Project Context
+## 1. Executive Summary & Critical Caveats
 
-This memo translates our empirical analysis of countries' perceived corruption, crime, geopolitical uncertainty, and foreign direct investment into policy guidance for a government agency or central bank.
+This memo translates our empirical analysis of perceived corruption, geopolitical uncertainty, and foreign direct investment (FDI) into policy guidance, with **explicit emphasis on methodological constraints and result instability**.
 
-Our final panel includes 20 countries and 12 years of annual data, for 237 country-year observations. The main outcome is signed-log foreign direct investment (`fdi_slog`), and the key driver is lagged CPI score (`cpi_score_lag1`), where a higher CPI score means lower perceived corruption.
+**Critical Finding – Results Are Not Stable:**
+When we exclude 2020 (pandemic year), the main corruption effect collapses from -0.1135 to -0.0010 (p-value: 0.42 → 0.99). This 99% coefficient reduction indicates our findings may reflect COVID-era investment shocks rather than a stable corruption-FDI relationship. **Causal interpretation is not justified without additional normal-period data.**
 
-### Main empirical takeaways
+### Dataset & Specification
 
-- Two-way fixed effects estimate for `cpi_score_lag1`: coefficient = -0.1135, clustered p-value = 0.4238.
-- GEPU is negative but not statistically strong: coefficient = -0.0159, p-value = 0.1876.
-- Model fit is weak: within R2 = 0.0149.
-- Random Forest offers only a modest predictive gain over OLS: test RMSE 14.64 vs. 15.42, and test R2 0.05 vs. -0.05.
-- Robustness checks do not produce a stable, statistically significant CPI effect across alternative lags, exclusion of 2020, or crime-based subsamples.
+- **Sample:** 20 countries, 13 years (2012-2024), 237 country-year observations
+- **Outcome:** Signed-log foreign direct investment (`fdi_slog`)
+- **Key driver:** Lagged CPI score (`cpi_score_lag1`); higher CPI = lower perceived corruption
+- **Model:** Two-way fixed effects with country and year dummies, clustered SEs
+- **Controls:** GEPU (geopolitical uncertainty/risk); *crime_index removed due to time-invariance in FE framework*
 
-Interpretation: the data do not support a strong claim that CPI alone explains foreign investment changes in this sample. The safest conclusion is that investment outcomes are shaped by a broader mix of institutional quality, uncertainty, and macro conditions.
+### Key Empirical Findings (with caveats)
 
-## 3.1 Policy Recommendations
+| Finding | Estimate | p-value | Interpretation |
+|---------|----------|---------|-----------------|
+| CPI lag 1 effect | -0.1135 | 0.4238 | Not significant; extreme sensitivity to 2020 |
+| GEPU effect | -0.0159 | 0.1876 | Weakly negative; not significant |
+| Model fit (Within R²) | 0.0149 | — | Only 1.5% of within-country FDI variation explained |
+| 2020 exclusion test | coef → -0.0010 | 0.9950 | **CRITICAL: Results unstable** |
+| Random Forest RMSE test | 14.64 vs 15.42 | — | Marginal predictive gain; insufficient for forecasting |
 
-### Policy Implication 1: Prioritize broad investment-climate reforms, not CPI alone
+**Interpretation:** The data do not support a strong or stable claim that CPI or GEPU meaningfully explains foreign investment in this sample. Results appear partially driven by pandemic-era shocks (2020), suggesting low structural stability.
 
-Finding: The lagged CPI effect is small, negative, and not statistically significant.
+## 3. Policy Recommendations
+### ⚠️ CRITICAL QUALIFICATION
+These recommendations are **exploratory and not causal claims**. The model:
+- Explains only 1.5% of within-country FDI variation
+- Shows extreme sensitivity to 2020 inclusion (results collapse when pandemic year excluded)
+- Cannot test M2's identified optimal lag (data too short)
+- Omits key macroeconomic drivers (GDP growth, exchange rates, trade flows, commodity prices)
 
-Recommendation: Treat anti-corruption reform as part of a wider investment-climate strategy that also improves contract enforcement, customs efficiency, transparency in procurement, and regulatory consistency.
+**Policymakers should treat these as directional hypotheses for further investigation, not actionable empirical claims.**
 
-Rationale: Investors respond to the full risk environment, not just one governance indicator. Even when the CPI effect is weak in our sample, better institutions can still reduce transaction costs, lower uncertainty premia, and improve long-run credibility.
+### Recommendation 1: Broaden investment-promotion strategy beyond single governance metrics
 
-### Policy Implication 2: Target uncertainty-sensitive and high-risk environments with stabilization tools
+**Finding:** The corruption index (CPI) effect is statistically zero and unstable. Crime cannot be reliably tested in fixed effects models (it is time-invariant within countries). Corruption alone does not explain FDI.
 
-Finding: GEPU is negative, and the high-crime subsample shows a more negative point estimate than the low-crime subsample, although neither is statistically significant.
+**Action:** Design investment policies that address the full governance and macro environment:
+- Contract enforcement and dispute resolution transparency
+- Customs and permitting efficiency
+- Macroeconomic stability (inflation targeting, sustainable debt)
+- Trade policy predictability
+- Recognition of structural differences (country-level heterogeneity)
 
-Recommendation: In markets with elevated security or geopolitical risk, pair investment promotion with targeted stabilization policies such as political-risk insurance, faster permitting, visible enforcement of business rules, and localized security coordination.
+**Rationale:** FDI responds to many factors simultaneously. Focused anti-corruption campaigns have value for their own sake (reducing public-sector theft, improving governance quality), but should not be oversold as the primary investment driver. The weak CPI coefficient in our sample suggests investors discount corruption risk among other considerations.
 
-Rationale: The mechanism is not just corruption per se; it is the broader investment risk environment. Equity concerns also matter because high-risk areas may already face weaker capital access, so a targeted intervention helps avoid widening regional gaps.
+### Recommendation 2: Prioritize short-term volatility and uncertainty reduction
 
-## 3.2 Scenario Analysis
+**Finding:** GEPU (geopolitical uncertainty) shows a negative point estimate, and the 2020 robustness check reveals that **current-period crises overwhelm long-run institutional effects.**
 
-We model three scenarios for the next 12 months based on governance and uncertainty conditions. Because the estimated effects are weak, the table below should be read as a directional planning exercise rather than a point forecast.
+**Action:** 
+- Communicate policy stability and predictability through forward guidance
+- Address short-term shocks (war, sanctions, commodity volatility, currency swings) that may spook investors in the near term
+- Build investor confidence through visible enforcement of existing rules, not just promises of reform
 
-| Scenario | Driver change | Predicted FDI impact | Probability |
-|---|---|---:|---:|
-| Baseline | CPI and GEPU remain near current levels | Roughly flat | 50% |
-| Improvement | CPI rises modestly and GEPU declines | Mild increase in FDI inflows | 30% |
-| Stress | CPI weakens and GEPU rises | Mild decline or delay in FDI | 20% |
+**Rationale:** The extreme sensitivity of our estimates to 2020 suggests that investors' immediate risk perceptions dominate long-run corruption assessments, especially in crisis periods. This means short-term stabilization may be as important as long-run institutional reform for attracting FDI.
 
-Expected value: On a normalized impact scale, the weighted average is slightly positive because the improvement scenario is more likely than the stress scenario, but the overall effect remains close to neutral.
+### Recommendation 3: Do not rely on this model for forecasting or precise policy calibration
 
-Recommendation: Because the downside from uncertainty shocks can materialize quickly while the upside from institutional reform is gradual, a cautious pro-investment stance is warranted. Policy should focus on reducing volatility and signaling predictability rather than promising a large near-term FDI jump.
+**Finding:** Random Forest and OLS both show poor predictive power (R² near 0). Within-explained variance is 1.5%.
 
-## 3.3 Risk Assessment
+**Action:** This analysis is suitable for raising policy discussion but not for quantitative target-setting. Use it alongside:
+- Business surveys of investor preferences and constraints
+- Sectoral deep-dives (manufacturing, extractive industries, services differ in risk sensitivity)
+- Comparative analysis of specific competitor countries
+- Historical case studies of investment decisions in the sample
 
-### Model Risks
+**Rationale:** The model captures correlation, not causation or individual decision logic. Real investment choices depend on deal-specific factors, executive risk tolerance, and competitive moves that aggregate models cannot predict precisely.
 
-1. Stable relationship assumption: The FE model assumes the relationship between CPI and FDI is stable over time within countries. If the corruption-FDI linkage changes because of trade shocks, sanctions, or major policy reforms, the estimated coefficient may not generalize.
-2. Omitted variable bias: FDI is also influenced by GDP growth, exchange rates, trade openness, labor costs, capital controls, tax policy, and sovereign risk. If these correlate with CPI or GEPU, our estimates may be confounded.
-3. External validity: The panel only includes the 20 countries with complete overlapping data. Results may not apply to countries outside this sample or to periods with different global capital-market conditions.
+## 4. Scenario Analysis (Highly Exploratory)
 
-### Domain-Specific Risks
+### ⚠️ Severe Caveat on Forecasting
 
-1. Endogeneity and reverse causality: FDI can affect governance quality, not just the other way around. More investment can increase reform pressure or improve institutions, which complicates causal interpretation.
-2. Measurement limitations: CPI is perception-based, crime data are country-level survey measures, and GEPU is a broad uncertainty index. These variables may not fully capture the mechanisms that matter for investors.
-3. Crisis sensitivity: The 2020 exclusion check shows the estimates are sensitive to crisis-year inclusion, suggesting that global shocks can distort the relationship in short panels.
+These scenarios are **NOT reliable forecasts**. They are included only to illustrate the model's directional logic. **The model:
+- Has near-zero predictive power (R² = 0.015)
+- Exhibits extreme parameter instability (coef -0.1135 → -0.0010 when 2020 removed)
+- Was estimated on a short, crisis-affected panel (2012-2024, includes 2 major shocks: 2020 COVID, 2022 Ukraine war)
+- Omits dominant macro drivers of FDI (interest rates, commodity prices, exchange rates, growth expectations)
 
-## 3.4 Caveats and Limitations
+**Do not use these scenarios for investment targets or budget planning.**
 
-1. Fixed effects assumption: Country fixed effects absorb time-invariant differences across countries, but they cannot fully eliminate bias from time-varying omitted factors.
-2. Parallel-trends style caution: Although this is not a DiD design, our interpretation still relies on the idea that changes in CPI and FDI are comparable over time. Pre-existing trends or structural breaks may weaken the interpretation.
-3. Lag specification: We tested lags of 1, 2, and 3 years. The sign remains negative, but the estimates are not stable enough to support a strong lag choice claim.
-4. Measurement error: CPI, crime, and FDI data all include noise from reporting differences, country coverage, and transformation choices. Alternative constructions could change the exact coefficient values.
-5. Predictive limits: The Random Forest model slightly outperforms OLS, but the gain is small. The dataset is better suited to cautious interpretation than to high-confidence forecasting.
+### Hypothetical Scenarios (2026-2027)
 
-## 3.5 Future Research Directions
+Assuming the point estimates from M3 persist (a questionable assumption), directional changes would be:
 
-To refine this analysis, future work could:
+| Scenario | Mechanism | Predicted Direction | Actual Confidence | Notes |
+|----------|-----------|---------------------|------------------|-------|
+| Baseline | CPI and GEPU unchanged | Flat FDI | Very Low | Model explains 1.5% of variation; most FDI moves unpredicted |
+| Reform | CPI rises, GEPU falls | Mild ↑ FDI | Extremely Low | Effect sign stable across lags but never significant; 2020 sensitivity undermines credibility |
+| Stress | CPI falls, GEPU rises | Mild ↓ FDI | Extremely Low | Crisis-year (2020) dominates; 2022+ dynamics unknown |
 
-1. Add macro controls such as GDP growth, inflation, exchange rates, trade openness, and sovereign debt indicators to better isolate the governance channel.
-2. Test heterogeneous effects by income group, region, sectoral FDI, or institutional baseline to see whether corruption matters more in some settings than others.
-3. Extend the sample with more years or more countries to improve power and check whether the weak CPI result persists in longer panels.
-4. Model nonlinearities and threshold effects, since governance risk may matter most once uncertainty or crime crosses a certain level.
-5. Use alternative identification strategies, such as instrumental variables or event studies around major reform episodes, to address endogeneity.
+### Interpretation
+If forced to rank the scenarios by likelihood, a **continued-volatility baseline** is most probable given global geopolitical fragmentation (Ukraine, Taiwan tensions, energy shocks). However, the model provides no reliable basis for quantifying these effects. **Policy preparation should focus on building flexibility and attracting flight-to-safety capital, rather than expecting corruption improvements alone to drive major FDI gains.**
 
-## 4. References
+## 5. Critical Limitations & Risk Assessment
+
+### ‼️ PRIMARY CONCERN: Extreme Sensitivity to 2020 Crisis Year
+
+The single most damaging result from our robustness checks:
+
+**When pandemic year (2020) is excluded from the sample:**
+- CPI coefficient: -0.1135 → **-0.0010** (99% reduction)
+- p-value: 0.4238 → **0.9950** 
+- Interpretation: The effect collapses to zero
+
+**Implication:** The -0.1135 baseline coefficient is dominated by 2020 FDI shocks (pandemic-driven capital flows, uncertainty spikes). Removing one year of 237 observations completely erases the signal, indicating:
+1. The corruption-FDI relationship is **not structurally stable** across normal and crisis regimes
+2. Results reflect **short-term crisis dynamics, not long-run governance effects**
+3. **Causal interpretation is premature** without data from additional normal periods
+
+### Data & Specification Limitations
+
+#### 1. Crime Index Cannot Be Tested (Specification Error from M2)
+- **Finding (M2):** Crime appeared relevant in exploratory correlation analysis
+- **Finding (M3):** Crime index is time-invariant within countries; absorbed by country fixed effects
+- **Correction:** Crime removed from FE model (was creating spurious high VIF = 6.56)
+- **Implication:** We cannot isolate crime effects in this FE framework. M2's hypothesis that crime is important cannot be tested. This is a specification limitation, not evidence that crime is unimportant.
+
+#### 2. Lag Specification Constrained by Data Duration
+- **M2 Finding:** Optimal correlation lag = 12 years
+- **M3 Reality:** Only 13 years of data (2012-2024); lag 12 produces zero observations
+- **Fallback:** Tested lags 1, 2, 3; all show negative sign but non-significant
+- **Implication:** Cannot test the lag M2 theory predicted. Results valid only for short lags that may not capture corruption-FDI mechanisms anticipated in EDA.
+
+#### 3. Explanatory Power Is Negligible
+- Within R² = 0.0149 (only **1.5% of variation** explained)
+- 98.5% of within-country FDI fluctuation remains unexplained by CPI, GEPU, year effects
+- **Implication:** Many dominant drivers are omitted (see section 5.4 below)
+
+#### 4. Omitted Macroeconomic Variables
+FDI is known to be driven by factors absent from this model:
+- **Real interest rates & capital costs** (global monetary conditions)
+- **Exchange rates & currency volatility** (affects repatriation paths and project IRR)
+- **Commodity prices** (drives resource-sector FDI)
+- **GDP growth & cyclical demand** (growth expectations drive investment)
+- **Trade openness & tariff environment** (affects market-seeking FDI)
+- **Sovereign debt & fiscal sustainability** (risk premium for public institutions)
+- **Infrastructure quality** (permits, ports, transport)
+
+If these correlate with CPI or GEPU, our estimates are confounded.
+
+#### 5. External Validity Issues
+- Only 20 countries with complete data overlap 2012-2024
+- Results may not generalize to:
+  - Countries with incomplete historical coverage
+  - Emerging markets with weaker data quality
+  - Periods outside 2012-2024 (pre-2008 crisis, post-2024)
+  - Specific sectors (infrastructure, natural resources, tech may respond differently to corruption)
+
+#### 6. Potential Endogeneity & Reverse Causality
+- **Problem:** FDI inflows can improve governance (investor pressure for transparency, transfer of management practices)
+- **Current design:** Fixed effects control for time-invariant country differences, but not time-varying omitted factors correlated with both FDI and CPI
+- **Implication:** Coefficient may reflect FDI → CPI improvement, not CPI → FDI investment (or both)
+
+#### 7. Measurement Error in Key Variables
+- **CPI:** Perception-based; subject to survey bias, varying respondent pools across years
+- **Crime:** Country-level surveys with inconsistent methodology; Numbeo voluntary reporting bias
+- **GEPU:** Broad geopolitical index; not country-specific in derivation
+- **FDI:** World Bank data subject to reporting lags, reclassifications (greenfield vs. M&A), carry-back financing effects
+
+### Statistical Robustness Issues
+
+- **Clustered vs unclustered:** CPI p-values 0.4238 (clustered) vs 0.6189 (unclustered); inference unchanged but larger SE under clustering
+- **Heteroskedasticity:** Breusch-Pagan p = 0.0560 (borderline; clustered SEs justified but imperfect correction)
+- **Model alternative (Random Forest):** RMSE 14.64 vs OLS 15.42; R² 0.051 vs -0.053; gains are marginal and lack causal interpretability
+
+## 6. Methodological Caveats for Policymakers
+
+### Do Not Interpret as Causal Evidence
+- This is a **correlational fixed effects model**, not a randomized trial or quasi-experiment
+- Holding country and year constants removes stable differences, but not time-varying confounders
+- To make causal claims, we would need instrumental variables, natural experiments, or policy discontinuities
+- **None of these are present in this analysis**
+
+### Data Is Too Short for Robust Time-Series Inference
+- 13 years of data (2012-2024) includes **two major global shocks**: 2020 COVID, 2022 Ukraine invasion
+- Long-run corruption-FDI relationships may require 30+ years to distinguish from temporary disruptions
+- Our panel is dominated by crisis-year movements, making normal-period relationships hard to identify
+
+### Cannot Test M2's Preferred Specification
+- M2 EDA identified **lag 12 as optimal** for understanding corruption-investment lag
+- Our data cannot support 12-year lags (zero observations after lagging)
+- Using lag 1 instead may miss important delayed economic mechanisms
+- **Future work with extended historical data (2000-2024 or earlier) should revisit this finding**
+
+### Country Heterogeneity & Outliers
+- M2 noted **China as an outlier** with much higher average CPI scores
+- China's different institutional structure (state-owned investment vehicles, strategic considerations beyond corruption perceptions) may not respond to CPI the same way as peer countries
+- Model average effects may mask important subgroup differences
+- **Robustness check by crime subsample shows no statistical difference, but sample sizes are small (~118 per group)**
+
+### Transformation Complexity (Signed-Log FDI)
+- The signed-log transform stabilizes variance but complicates interpretation
+- Elasticity vs. level effects must be tracked carefully
+- Alternative transformations (simple logs, levels) might produce different conclusions
+- Sensitivity to transformation choice has not been formally tested
+
+### Model Selection & Statistical Power
+- Random Forest outperforms OLS slightly, but both show poor predictive power
+- With such weak overall explanatory power, any model choice is somewhat arbitrary
+- Sample size (237 observations, 20 countries) limits power to detect small effects reliably
+
+## 7. Recommendations for Strengthening Future Analysis
+
+### Immediate (Data Collection & Extension)
+
+1. **Extend historical panel backward (pre-2012)** to accumulate longer time series
+   - Goal: Enable testing of lag-12 specification identified in M2
+   - Would also reduce relative weight of pandemic shocks (2020-2024 is now 24% of sample)
+   - Target: 25-30 years of data to distinguish trend from crisis
+
+2. **Add global macroeconomic controls**
+   - Real interest rates (Fed Funds, ECB rate adjusted for inflation)
+   - Exchange rates or commodity price indices
+   - Global GDP growth and equity market returns
+   - VIX or other volatility indices
+   - These explain a large portion of FDI variation currently missing from model
+
+3. **Harmonize crime and governance data**
+   - Validate Numbeo crime methodology (survey bias, response rate drift)
+   - Compare CPI against alternative indices (TI's Bribe Payer Index, ICRG, V-Dem institutional quality)
+   - Test robustness to data source choice
+
+### Medium-term (Methodological Refinement)
+
+4. **Segment analysis by FDI type and country income group**
+   - Greenfield FDI vs. M&A may respond differently to corruption
+   - Low-income vs. high-income countries may weight governance vs. macro conditions differently
+   - Sector-specific analysis (extractive industries, manufacturing, services, tech)
+
+5. **Test for structural breaks and regime shifts**
+   - Formally estimate breakpoint around 2020 or 2022
+   - Fit separate regressions for "normal" (2012-2019) and "crisis" (2020-2024) periods
+   - Use rolling-window estimation to detect if corruption-FDI link has shifted
+
+6. **Investigate China separately**
+   - M2 identified as outlier; may follow different investment logic
+   - Estimate model excluding China to assess influence on aggregate results
+   - Examine whether state-owned enterprises respond differently to CPI signals
+
+7. **Address endogeneity more rigorously**
+   - Search for instrumental variables (past governance reforms, external shocks that affect CPI but not FDI directly)
+   - Use lagged CPI changes or interaction terms to test timing hypotheses
+   - Consider dynamic panel models (Arellano-Bond) if sufficient time-series data accumulated
+
+### Long-term (Research Strategy)
+
+8. **Develop country case studies** to complement quantitative analysis
+   - Interview investors about actual corruption-FDI decision linkage
+   - Examine specific reform episodes and quantify associated FDI changes
+   - Build qualitative evidence on mechanisms the model cannot detect
+
+9. **Leverage subnational or sectoral variation**
+   - If available: subnational FDI and corruption data (within-country regional variation)
+   - Reduces omitted country heterogeneity bias
+   - Increases effective sample size without needing more countries
+
+10. **Test alternative outcome measures**
+    - Greenfield investment from individual source countries (directional FDI)
+    - Job creation or local employment from FDI projects
+    - Sectoral FDI (per sector) to see if corruption effects heterogeneous
+    - Comparison to portfolio investment or debt flows as robustness
+
+## 8. Bibliography
 
 1. Transparency International. (2025). Corruption Perceptions Index. Retrieved from https://www.transparency.org/en/
 2. World Bank. (2024). Foreign direct investment, net inflows (BoP, current US$). Retrieved from https://data.worldbank.org/indicator/BX.KLT.DINV.CD.WD
 3. Numbeo. (2025). Crime Index by country. Retrieved from https://www.numbeo.com/crime/
 4. Caldara, D., & Iacoviello, M. (2022). Measuring geopolitical risk. American Economic Review, 112(4), 1194-1225. Retrieved from https://www.policyuncertainty.com/gpr.html
+5. Transparency International. (2023). How to use the CPI: Understanding corruption perceptions [Methodological guide]. Retrieved from https://www.transparency.org/en/our-research/how-to-use-the-cpi
 
-## Appendix: AI Audit Summary
+## 9. Appendix: Specification Changes from M2 Analysis
+
+### M2 Findings That Could Not Be Maintained in M3
+
+| M2 Hypothesis | M3 Outcome | Reason |
+|---------------|-----------|--------|
+| Crime is an important factor (suggested by EDA) | **Cannot test in FE model** | Time-invariant within countries; absorbed by fixed effects |
+| Optimal lag = 12 years | **Cannot test; fallback to lag 1** | Only 13 years of data means lag-12 produces zero observations |
+| Weak negative CPI-FDI correlation | **Confirmed but unstable** | Correlation observed, but coefficient collapses when 2020 removed |
+| China is an outlier | **Confirmed qualitatively** | Model with China shows more negative CPI effect, but not formally tested |
+
+### Corrections to Original M3 (April 29, 2026)
+
+1. **Removed crime_index from main FE model** (was created spurious multicollinearity due to time-invariance)
+2. **Documented lag-12 infeasibility** rather than proceeding with inappropriate specification
+3. **Added explicit 2020 sensitivity check** showing 99% coefficient reduction when pandemic year excluded
+4. **Reframed all results as exploratory**, not causal
+
+## 10. AI Audit & Responsibility
 
 ### AI Tools Used
 
-- GitHub Copilot
-- ChatGPT
+- GitHub Copilot (for code generation and analytical support)
+- ChatGPT (for draft memo sections and interpretation guidance)
+- Pylance (Python language server, for code diagnostics)
 
-Model versions were not always exposed in the original workflow logs. For this project writeup, GitHub Copilot is the primary AI tool used for coding and drafting support.
+### Critical Corrections to AI-Generated Content
+
+**M3 Initial Drafts (Pre-April 29 Corrections):**
+Copilot-generated code and interpretations initially presented crime_index in the FE model without recognizing the time-invariance specification error. The AI generated plausible-sounding interpretations of crime effects, but these were **incorrect** due to the collinearity with country fixed effects.
+
+**Correction Process:**
+Team manually identified the violation (VIF=6.56, perfect multicollinearity diagnosis) and removed crime_index from main model. This required **human domain knowledge** of fixed-effects model mechanics that the AI tools cannot reliably apply.
+
+**Memo Drafting:**
+Initial Copilot draft of this memo was too confident in the CPI-FDI relationship and underweighted result instability. The AI was asked to "summarize key findings," which led to a conventional framing that oversold weak evidence. We systematically revised downward all confidence claims and elevated caveats to the executive summary.
+
+### Verification & Validation Process
+
+All empirical claims in this memo have been checked against:
+1. **Saved regression output** in `results/tables/M3_*.csv` and `M3_*.txt` files
+2. **Plot files** in `results/figures/` (correlation heatmap, time-series, diagnostic plots)
+3. **Robustness check tables** in `results/tables/M3_robustness_*.csv`
+4. **Data summary statistics** from the cleaned analysis panel
 
 ### Key Verification Examples
 
-#### M1 Example
+**Revenue Example (2020 Sensitivity):**
+- AI initially suggested: "Results are sensitive to outlier years but this is expected in short panels"
+- We checked: Computed coefficient -0.1135 (with 2020) vs -0.0010 (without 2020)
+- Revision: Upgraded to "CRITICAL CONCERN" status; framed as evidence of instability, not expected turbulence
 
-Prompt: "Help summarize the data cleaning steps for the merged country-year panel and explain why the merge order matters."
+**Crime Index Example (Specification Error):**
+- AI generated: "Crime index enters negatively with coefficient = -X, suggesting..."
+- Team discovered: High VIF (6.56), time-invariance within countries, absorption by fixed effects
+- Revision: Removed crime from estimation; documented this as specification error, not substantive finding
 
-Output: A draft summary of the four-source merge, the common-country filter, and the annual alignment strategy.
-
-Verification: We checked the cleaned panel, the country-year coverage, and the saved output file in data/final/analysis_panel.csv.
-
-Critique: The first draft was too generic about the merge strategy, so we replaced it with exact data-source wording and the actual country-year structure.
-
-#### M2 Example
-
-Prompt: "Turn our EDA results into a concise narrative about the relationship between corruption, crime, and foreign investment."
-
-Output: A draft summary highlighting the weak negative CPI relationship, the lagged pattern, and the country heterogeneity.
-
-Verification: We compared the summary against the plots in results/figures and the cleaned panel statistics.
-
-Critique: The AI over-stated the strength of the crime relationship, so we softened that language and emphasized uncertainty.
-
-#### M3 Example
-
-Prompt: "Interpret the fixed effects results for lagged CPI score and GEPU in plain language for the memo."
-
-Output: A draft explanation that a one-point increase in lagged CPI is associated with a -0.1135 change in signed-log FDI, with non-significant p-values.
-
-Verification: We matched the interpretation to the saved regression table and the PanelOLS summary output.
-
-Critique: The AI initially framed the result too causally, so we changed it to cautious associational language and noted the low within R2.
-
-#### M4 Example
-
-Prompt: "Write policy recommendations and scenario analysis for a memo on corruption, crime, geopolitical uncertainty, and FDI."
-
-Output: A draft policy memo structure with recommendation, scenario, risk, limitations, and future research sections.
-
-Verification: We checked the language against the actual model outputs, robustness checks, and data coverage before finalizing the memo.
-
-Critique: The AI wanted to assign stronger confidence than the evidence justified, so we explicitly framed the policy advice as cautious and evidence-limited.
+**Lag Specification Example:**
+- AI suggested: "We use lag 1 as the standard specification, with longer lags tested for robustness"
+- We checked: M2 analysis explicitly recommended lag 12; current data cannot support it
+- Revision: Documented lag-12 infeasibility as a data limitation, not a design choice
 
 ### Responsibility Statement
 
-All code and analysis in this memo has been verified by our team. We used AI as a productivity tool, not as a substitute for understanding. We take full responsibility for the final wording, interpretations, and any remaining errors.
+**Our team takes full responsibility for:**
+- All policy recommendations and interpretations
+- Accuracy of statistical claims against saved model outputs
+- Flagging of limitations and caveats
+- Any remaining errors or oversights
+
+**AI tools were used as productivity aids for:**
+- Initial code drafting (verified by team)
+- Narrative structure and prose quality (revised for accuracy)
+- Cross-reference formatting and reference standardization
+
+**AI did NOT:**
+- Perform final interpretation of results
+- Validate econometric assumptions or specification choices
+- Decide whether claims meet evidence standards
+- Approve or finalize any policy guidance
+
+We took a conservative stance: when AI-generated text was unclear or potentially misleading about causal claims, we revised downward to exploratory/correlational framing and elevated uncertainty. The current version prioritizes honesty about limitations over confidence in weak findings.

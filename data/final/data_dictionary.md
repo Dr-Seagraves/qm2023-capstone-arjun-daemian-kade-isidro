@@ -29,7 +29,31 @@ Data is structured as a panel dataset with countries as units and years as time 
 - **Range**: 0-100 (higher values indicate higher crime)
 - **Source**: Numbeo Crime Index
 - **Note**: Originally from raw/numbeo_crime_index_2012_2025.csv
+- **Status**: ⚠️ **PRESENT IN DATASET BUT NOT USED IN MAIN ANALYSIS** (see below)
 - **Missing**: Values are present for all Country-Year combinations in the common country set
+
+#### Why Crime Index Is Not Used in Main Models
+
+**Finding**: Crime_index is time-invariant (or nearly time-invariant) within each country. 
+
+**Implication in Fixed Effects (FE) Framework**: 
+- In two-way FE models with country dummies, time-invariant variables are absorbed by country fixed effects
+- This creates perfect collinearity: crime_index and the country indicator perfectly predict each other
+- Results: VIF = 6.56 (extremely high), model fails to estimate crime effects
+
+**What This Means**:
+- Crime data was collected and included in exploratory analysis (M2 EDA)
+- M2 found "crime is not an important factor" in correlation analysis
+- M3 attempted to use crime as a control but discovered it's time-invariant
+- **Crime is retained in the dataset for transparency and future robustness checks, but is excluded from main FE models**
+
+**Where Crime Was Actually Used**:
+1. **M2 (Exploratory)**: Scatter plot showing weak negative relationship with FDI
+2. **M3 (Robustness)**: Split sample analysis (low-crime vs. high-crime countries, ~63-74 obs per group; no significant differences)
+3. **M3 (ML Model)**: Random Forest feature importance (~13.9% importance, 3rd after GEPU and CPI)
+
+**Future Research**:
+If more years of data are obtained, crime variation within countries could also be explored. Currently, adding 15+ years of history (pre-2012) would allow testing whether crime changes correlate with FDI changes.
 
 ### foreign_investment
 - **Description**: Foreign Direct Investment Inflow

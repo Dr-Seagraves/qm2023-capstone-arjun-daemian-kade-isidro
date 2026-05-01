@@ -17,6 +17,8 @@ We include a utility module in ``src/fetch_crime_index.py`` that can download
 and parse the Numbeo Crime Index table.  The script is generic enough that you
 can point it at any similar HTML table.
 
+⚠️ **Note on Crime Data**: Crime Index data were collected and explored (M2) but **cannot be reliably used in econometric models** due to time-invariance within countries (absorbed by country fixed effects, causing multicollinearity). See [CRIME_DATA_METHODOLOGY.md](CRIME_DATA_METHODOLOGY.md) for full explanation of collection, use, and exclusion rationale.
+
 ## World Foreign Investment Inflow Data
 
 Downloaded from worldbank.org

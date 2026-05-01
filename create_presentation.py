@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a PowerPoint presentation for the capstone project."""
+"""Generate a PowerPoint presentation for the capstone project (CORRECTED VERSION)."""
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -67,12 +67,19 @@ def add_content_slide(prs, title, content_points):
             p = text_frame.paragraphs[0]
         else:
             p = text_frame.add_paragraph()
-        p.text = point
+        
+        # Check if this is a sub-bullet (starts with "•")
+        if point.startswith("  "):
+            p.level = 1
+            p.text = point.strip()
+        else:
+            p.level = 0
+            p.text = point
+        
         p.font.size = Pt(18)
         p.font.color.rgb = RGBColor(44, 62, 80)
-        p.level = 0
-        p.space_before = Pt(6)
-        p.space_after = Pt(6)
+        p.space_before = Pt(4)
+        p.space_after = Pt(4)
     
     return slide
 
@@ -81,208 +88,246 @@ prs = Presentation()
 prs.slide_width = Inches(10)
 prs.slide_height = Inches(7.5)
 
-# Slide 1: Title
+# ==============================================================================
+# SLIDE 1: Title
+# ==============================================================================
 add_title_slide(prs, 
-    "Corruption, Crime, and Foreign Investment",
-    "QM 2023 Capstone Project\nArjun • Daemian • Kade • Isidro")
+    "Corruption, Risk & Foreign Investment",
+    "QM 2023 Capstone Project\nArjun • Daemian • Kade • Isidro\nCorrected Analysis (2026-04-29)")
 
-# Slide 2: Research Question
+# ==============================================================================
+# SLIDE 2: Refined Research Question
+# ==============================================================================
 add_content_slide(prs,
-    "Research Question",
+    "Research Question (Refined)",
     [
-        "How does perceived corruption and crime of a country affect foreign direct investment?",
+        "How do perceived corruption and geopolitical risk affect foreign direct investment?",
         "",
-        "Key Variables:",
-        "• Corruption Perceptions Index (CPI) – Transparency International",
-        "• Crime Index – Numbeo",
-        "• Geopolitical Economic Policy Uncertainty (GEPU)",
-        "• Foreign Direct Investment (FDI) – World Bank",
+        "Originally Planned: Included crime data",
+        "Actually Analyzed: CPI + GEPU (crime excluded due to time-invariance)",
         "",
-        "Sample: 20 countries, 2012–2025 (237 country-year observations)"
+        "Focus: Causal inference using panel econometric methods",
+        "  with emphasis on methodological constraints",
     ])
 
-# Slide 3: Hypotheses
+# ==============================================================================
+# SLIDE 3: Data Overview
+# ==============================================================================
 add_content_slide(prs,
-    "Hypotheses",
+    "Data Sources & Coverage",
     [
-        "H1: As corruption increases, foreign investment decreases",
+        "Sample: 20 countries, 13 years (2012-2024), 237 country-year observations",
         "",
-        "H2: Crime rates have a measurable impact on economic uncertainty",
+        "Data Sources:",
+        "  Corruption Perceptions Index (CPI) – Transparency International",
+        "  Geopolitical Risk Index (GEPU) – Caldara & Iacoviello",
+        "  Foreign Direct Investment (FDI) – World Bank",
+        "  Crime Index – Numbeo (collected but see next slide)",
         "",
-        "H3: Perceived corruption (CPI) is the biggest determinant of FDI among our chosen factors",
-        "",
-        "Expected mechanism: Investors respond to governance quality and institutional risk"
+        "Outcome: FDI inflows (signed-log transformation)",
     ])
 
-# Slide 4: Data Sources
+# ==============================================================================
+# SLIDE 4: Crime Data Constraints
+# ==============================================================================
 add_content_slide(prs,
-    "Data Sources & Quality",
+    "Crime Data: Why We Couldn't Use It",
     [
-        "✓ Crime Index: Numbeo (https://www.numbeo.com/crime/)",
+        "Problem: Crime is time-invariant within countries (e.g., US consistently ~40-45)",
         "",
-        "✓ Foreign Direct Investment: World Bank",
-        "  (https://data.worldbank.org/indicator/BX.KLT.DINV.CD.WD)",
+        "Why This Matters in Fixed Effects Models:",
+        "  Country fixed effects already capture all time-invariant differences",
+        "  Crime became perfectly collinear with country dummies",
+        "  Result: VIF = 6.56 (model fails to estimate)",
         "",
-        "✓ Corruption Perceptions Index: Transparency International",
-        "  (https://www.transparency.org)",
-        "",
-        "✓ Geopolitical Uncertainty: Policy Uncertainty Index",
-        "  (https://www.policyuncertainty.com)",
-        "",
-        "All data: Annual frequency, 2012–2025"
+        "Solution: Excluded from main analysis",
+        "  But kept in robustness checks and Random Forest",
+        "  See CRIME_DATA_METHODOLOGY.md for full details",
     ])
 
-# Slide 5: EDA Key Findings
+# ==============================================================================
+# SLIDE 5: Milestone 2 – Exploratory Data Analysis
+# ==============================================================================
 add_content_slide(prs,
-    "M2: Exploratory Data Analysis Findings",
+    "M2: Exploratory Data Analysis",
     [
-        "Weak negative correlation (r = -0.14) between FDI and CPI score",
-        "   ↳ Makes intuitive sense: higher corruption → lower investment",
+        "Approach: Correlation, time-series plots, group heterogeneity",
         "",
-        "Optimal lag: 12 years (captures longer-term investment relationships)",
+        "Key Findings:",
+        "  Weak negative correlation: CPI vs FDI (r ≈ -0.14)",
+        "  Suggested optimal lag: 12 years (for economic relationship)",
+        "  China an outlier: much higher average CPI than peers",
+        "  Crime 'not an important factor' in exploratory correlation",
         "",
-        "Most sensitive countries: Singapore, Sweden, Ireland",
-        "   ↳ Changes in CPI have outsized impact on FDI perceptions",
-        "",
-        "⚠ China identified as outlier with atypical investment patterns",
-        "",
-        "Seasonal patterns evident in time series"
+        "Data Quality Flags:",
+        "  Some countries missing 2025 data",
+        "  China heterogeneity noted as potential issue",
     ])
 
-# Slide 6: Methodology
+# ==============================================================================
+# SLIDE 6: Milestone 3 – Econometric Methodology
+# ==============================================================================
 add_content_slide(prs,
-    "Methodology: Model A (Econometric)",
+    "M3: Econometric Specification",
     [
-        "Two-Way Fixed Effects Model (Required approach)",
+        "Model: Two-way fixed effects (country + year dummies)",
         "",
-        "Outcome: log(|FDI|) – signed log transform",
+        "Key Design Decisions:",
+        "  Outcome: fdi_slog (signed-log transform; handles negative values)",
+        "  Main driver: cpi_score_lag1 (one-year lag CPI)",
+        "  Control: gepu (geopolitical uncertainty; time-varying)",
+        "  Robust SEs: Clustered at country level",
         "",
-        "Key driver: CPI score (lagged)",
-        "",
-        "Controls: Crime Index, Geopolitical Uncertainty (GEPU)",
-        "",
-        "Fixed effects: Country and Year",
-        "",
-        "SEs: Clustered by country to account for within-country correlation"
+        "Lag Specification Issue:",
+        "  M2 identified lag=12 as optimal",
+        "  But only 13 years of data ⟹ lag 12 = zero observations",
+        "  Tested lags 1, 2, 3 as feasible alternatives",
     ])
 
-# Slide 7: Main Results
+# ==============================================================================
+# SLIDE 7: M3 Main Results
+# ==============================================================================
 add_content_slide(prs,
-    "Model A: Main Results",
+    "M3: Primary Findings",
     [
-        "CPI Score (lagged 1-year):",
-        "   Coefficient: -0.1135   |   p-value: 0.4238   |   NOT significant",
+        "Model A: Two-Way Fixed Effects",
         "",
-        "GEPU (Geopolitical Uncertainty):",
-        "   Coefficient: -0.0159   |   p-value: 0.1876   |   NOT significant",
+        "CPI Effect (main hypothesis):",
+        "  Coefficient: -0.1135  |  p-value: 0.4238  |  NOT SIGNIFICANT",
+        "",
+        "GEPU Effect (risk control):",
+        "  Coefficient: -0.0159  |  p-value: 0.1876  |  NOT SIGNIFICANT",
         "",
         "Model Fit:",
-        "   Within R²: 0.0149 (low explanatory power)",
-        "   F-test p-value: 0.1832",
-        "",
-        "⚠ Interpretation: CPI effect is small and not statistically robust"
+        "  Within R² = 0.0149 (only 1.5% of variation explained)",
+        "  Suggests major omitted drivers (macro conditions, trade policy, etc.)",
     ])
 
-# Slide 8: Model Comparison
+# ==============================================================================
+# SLIDE 8: Critical Finding – 2020 Sensitivity
+# ==============================================================================
 add_content_slide(prs,
-    "Model B: Machine Learning Comparison",
+    "Critical Instability: 2020 Pandemic Shock",
     [
-        "Does Random Forest better predict FDI than OLS?",
+        "Baseline Model (with 2020): coef = -0.1135, p = 0.4238",
+        "Excluding 2020 (just COVID year): coef = -0.0010, p = 0.9950",
         "",
-        "Out-of-sample Performance:",
-        "   OLS:           RMSE = 15.42   |   R² = -0.053",
-        "   Random Forest: RMSE = 14.64   |   R² = 0.052",
+        "What This Means:",
+        "  99% coefficient reduction when pandemic year removed",
+        "  Effect collapses to statistically zero",
+        "  Suggests results dominated by COVID-era FDI shocks",
         "",
-        "Verdict: Modest improvement (~5% RMSE reduction)",
-        "",
-        "Trade-off: RF better for prediction but less interpretable",
-        "   Prefer OLS for causal inference about corruption effects"
+        "Implication:",
+        "  Model captures crisis dynamics, NOT stable corruption-FDI relationship",
+        "  Causal interpretation NOT justified",
+        "  Need longer sample covering multiple normal economic regimes",
     ])
 
-# Slide 9: Diagnostics
+# ==============================================================================
+# SLIDE 9: Robustness Checks
+# ==============================================================================
 add_content_slide(prs,
-    "Diagnostics & Robustness Checks",
+    "Robustness Checks: What Held Up?",
     [
-        "Heteroskedasticity (Breusch-Pagan):",
-        "   p-value: 0.056 → Slight evidence, but marginal",
-        "   Use of clustered SEs justified as conservative approach",
+        "Alternative Lags (1, 2, 3 years):",
+        "  All negative, but all non-significant (p > 0.15)",
+        "  Sign direction stable; magnitude not robust",
         "",
-        "Multicollinearity: Controlled, VIF values acceptable",
+        "Crime-Based Subsamples:",
+        "  Low-crime countries: coef = -0.168, p = 0.753",
+        "  High-crime countries: coef = -0.001, p = 0.999",
+        "  No significant heterogeneity detected",
         "",
-        "Robustness tests:",
-        "   • Alternative lags (1, 2, 3 years) → Unstable effects",
-        "   • Exclude 2020 → Coefficients change meaningfully",
-        "   • Crime-based subsamples → No stable pattern"
+        "Clustered vs. Unclustered SEs:",
+        "  Conclusion unchanged under both covariance assumptions",
     ])
 
-# Slide 10: Policy Implications
+# ==============================================================================
+# SLIDE 10: Model Limitations
+# ==============================================================================
 add_content_slide(prs,
-    "Policy Recommendations",
+    "Limitations & Caveats",
     [
-        "1. Prioritize BROAD investment-climate reforms",
-        "   ↳ CPI alone is insufficient; must improve contract enforcement,",
-        "      regulatory consistency, and transparency",
+        "Omitted Variables (major FDI drivers missing):",
+        "  GDP growth, exchange rates, interest rates, commodity prices",
+        "  Trade openness, infrastructure quality, tax policy",
         "",
-        "2. Address uncertainty and risk in high-crime environments",
-        "   ↳ Offer political-risk insurance, faster permitting, security measures",
+        "Measurement Error:",
+        "  CPI perception-based; Crime data Numbeo-sourced; GEPU broad",
         "",
-        "3. Expect gradual, not immediate, FDI responses to reforms",
-        "   ↳ Institutional trust builds over time (explains 12-year optimal lag)",
+        "External Validity:",
+        "  Only 20 countries with complete overlap",
+        "  Results may not generalize to other regions/periods",
         "",
-        "4. Monitor scenario outcomes (Baseline, Improvement, Stress)"
+        "Endogeneity:",
+        "  FDI may improve governance, not just vice versa",
     ])
 
-# Slide 11: Limitations
+# ==============================================================================
+# SLIDE 11: Conclusions & Main Takeaways
+# ==============================================================================
 add_content_slide(prs,
-    "Limitations & Risks",
+    "Conclusions",
     [
-        "Small sample: Only 20 countries with complete data",
+        "Finding: Corruption (CPI) effect on FDI is NOT statistically significant",
+        "  and highly unstable (driven by 2020 pandemic shock)",
         "",
-        "Omitted variables: GDP growth, exchange rates, tax policy, trade openness",
+        "Policy Implication:",
+        "  Corruption reform matters for governance, but:",
+        "  FDI also depends on macro stability, uncertainty, and broader institutions",
+        "  Anti-corruption alone won't substantially increase investment",
         "",
-        "Endogeneity: Does FDI drive corruption reforms, or vice versa?",
-        "",
-        "Measurement: CPI is perception-based; crime data are survey estimates",
-        "",
-        "Crisis sensitivity: Results sensitive to 2020 inclusion",
-        "",
-        "Generalizability: Cannot confidently apply to countries outside sample"
+        "Methodological Learning:",
+        "  Criminal data collected but inapplicable in FE framework (time-invariant)",
+        "  Data constraints forced lag compromise (wanted 12, got 1)",
+        "  Short panel with major shocks = weak causal inference",
     ])
 
-# Slide 12: Future Directions
+# ==============================================================================
+# SLIDE 12: Future Research Directions
+# ==============================================================================
 add_content_slide(prs,
-    "Future Research Directions",
+    "Recommendations for Future Work",
     [
-        "✓ Add macro controls: GDP growth, inflation, sovereign debt",
+        "Extend Data:",
+        "  Add 15-20 years of historical data (pre-2012) to test lag-12 relationship",
+        "  Reduce relative weight of 2020 crisis year",
         "",
-        "✓ Test heterogeneous effects by region, income group, or sector",
+        "Add Macro Controls:",
+        "  Include real interest rates, exchange rates, GDP growth, commodity prices",
         "",
-        "✓ Extend sample: More countries and longer time periods for power",
+        "Alternative Methods:",
+        "  Use instrumental variables if valid instruments found",
+        "  Run Random Effects (RE) models to estimate crime effects",
+        "  Investigate 2020 structural break separately",
         "",
-        "✓ Explore nonlinearities: Does corruption matter more above a threshold?",
-        "",
-        "✓ Investigate causal pathways: Mediation analysis through institutional channels",
-        "",
-        "✓ Alternative governance measures: World Bank GEI, Rule of Law Index"
+        "Qualitative Research:",
+        "  Interview investors on actual corruption-FDI linkage",
     ])
 
-# Slide 13: Conclusion
+# ==============================================================================
+# SLIDE 13: Takeaway Message
+# ==============================================================================
 add_content_slide(prs,
-    "Conclusion",
+    "Key Takeaway",
     [
-        "Finding: Weak statistical relationship between CPI and FDI in this sample",
+        "What We Learned:",
+        "  Corruption matters qualitatively for investor confidence",
+        "  But quantitative causal effect NOT detected in this short panel",
         "",
-        "Key takeaway: FDI is driven by broader risk environment, not corruption alone",
+        "Why?",
+        "  Pandemic dominated recent decade",
+        "  Missing macro drivers (interest rates, growth, trade)",
+        "  Optimal lag (12 years) unattainable with 13-year sample",
         "",
-        "Policy insight: Multi-dimensional reform strategy more effective than",
-        "anti-corruption focus in isolation",
-        "",
-        "Data-driven recommendation: Invest in uncertainty reduction and",
-        "institutional credibility alongside corruption control",
-        "",
-        "Next step: Expand sample and incorporate additional institutional variables"
+        "Next Steps:",
+        "  Get longer data + macro controls",
+        "  Then revisit causal question with more confidence",
+        "  This analysis is exploratory foundation, not final answer",
     ])
 
-# Save
-prs.save('Capstone_Project_Presentation.pptx')
-print("✓ Presentation created: Capstone_Project_Presentation.pptx")
+# ==============================================================================
+# Save the presentation
+# ==============================================================================
+prs.save("capstone_presentation_corrected.pptx")
+print("✓ Presentation saved: capstone_presentation_corrected.pptx (13 slides)")

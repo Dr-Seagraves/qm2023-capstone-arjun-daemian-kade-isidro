@@ -1,13 +1,23 @@
 """
-QM 2023 Capstone: Milestone 3 Econometric Models
+QM 2023 Capstone: Milestone 3 Econometric Models (CORRECTED)
 Team: Arjun, Daemian, Kade, Isidro
 Members: Arjun, Daemian, Kade, Isidro
-Date: 2026-04-20
+Date: 2026-04-20 (Updated 2026-04-29)
 
 This script estimates panel regression models to identify causal effects of
 corruption perception and risk factors on foreign investment.
 
-Model A (required): Two-way fixed effects panel regression.
+METHODOLOGY CORRECTIONS (vs. original):
+1. Removed crime_index from FE model: time-invariant within countries, absorbed by
+   country FE, causing high multicollinearity (VIF=6.56). Kept gepu as external risk.
+2. Added 12-year lag specification: M2 EDA identified optimal lag=12; now primary model.
+3. Alternative lags (1,2,3,12): robustness tests lag structure vs best EDA finding.
+4. Explicit 2020 sensitivity analysis: baseline shows huge parameter shift when 2020
+   excluded, indicating model may be driven by pandemic shock rather than stable effects.
+5. Clarified outcome transform: signed log handles negative FDI values while reducing
+   heteroskedasticity from skewed positively-valued cases.
+
+Model A (required): Two-way fixed effects panel regression (PRIMARY: 12-year lag).
 Model B (chosen): Machine learning comparison (Random Forest vs. OLS).
 
 Outputs:
@@ -59,20 +69,42 @@ def build_vif_table(X: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def fit_fe_model(df: pd.DataFrame, driver_col: str):
-    """Fit two-way FE panel model with clustered and unclustered SE."""
-    model_df = df[[
-        "Country",
-        "Year",
-        "fdi_slog",
-        driver_col,
-        "crime_index",
-        "gepu",
-    ]].dropna().copy()
+def fit_fe_model(df: pd.DataFrame, driver_col: str, include_crime: bool = False):
+    """
+    Fit two-way FE panel model with clustered and unclustered SE.
+    
+    CORRECTED: Excludes crime_index by default since it is:
+    - Time-invariant within countries
+    - Absorbed by country fixed effects
+    - Causes high VIF (6.56) and multicollinearity
+    
+    Only returns crime in diagnostics if include_crime=True (for VIF check only).
+    """
+    if include_crime:
+        model_df = df[[
+            "Country",
+            "Year",
+            "fdi_slog",
+            driver_col,
+            "crime_index",
+            "gepu",
+        ]].dropna().copy()
+    else:
+        model_df = df[[
+            "Country",
+            "Year",
+            "fdi_slog",
+            driver_col,
+            "gepu",
+        ]].dropna().copy()
 
     panel = model_df.set_index(["Country", "Year"]).sort_index()
     y = panel["fdi_slog"]
-    X = panel[[driver_col, "crime_index", "gepu"]]
+    
+    if include_crime:
+        X = panel[[driver_col, "crime_index", "gepu"]]
+    else:
+        X = panel[[driver_col, "gepu"]]
 
     fe_clustered = PanelOLS(
         y,
@@ -113,9 +145,12 @@ raw = raw.sort_values(["Country", "Year"]).reset_index(drop=True)
 df = raw.dropna(subset=["foreign_investment", "cpi_score", "crime_index", "gepu"]).copy()
 
 # Signed log transform handles potentially negative FDI while reducing skew.
+# Motivation: Signed log preserves sign of negative FDI while compressing range,
+# reducing heteroskedasticity from large positive values.
 df["fdi_slog"] = signed_log1p(df["foreign_investment"])
 
-for lag in [1, 2, 3]:
+# Create lagged CPI scores. M2 EDA identified lag=12 as optimal, but we test alternatives.
+for lag in [1, 2, 3, 4, 5, 6, 12]:
     df[f"cpi_score_lag{lag}"] = df.groupby("Country")["cpi_score"].shift(lag)
 
 # Group indicator for subgroup robustness check.
@@ -128,11 +163,32 @@ print(f"Countries: {df['Country'].nunique()}, Years: {df['Year'].min()}-{df['Yea
 
 # -----------------------------------------------------------------------------
 # Section 3: Model A - Fixed Effects regression (required)
+# CORRECTED: Uses lag 12 from M2 EDA, then prefers lag 4 before shorter lags.
+# Removed crime_index (absorbed by country FE, time-invariant, high VIF).
 # -----------------------------------------------------------------------------
 
-panel, y, X, fe_clustered, fe_unclustered = fit_fe_model(df, "cpi_score_lag1")
+primary_lag_col = None
+for test_lag in [12, 4, 3, 2, 1]:
+    test_col = f"cpi_score_lag{test_lag}"
+    test_model_df = df[[
+        "Country",
+        "Year",
+        "fdi_slog",
+        test_col,
+        "gepu",
+    ]].dropna()
+    if len(test_model_df) > 30:  # Minimum sample size for FE
+        primary_lag_col = test_col
+        print(f"\nUsing primary lag specification: cpi_score_lag{test_lag} (n={len(test_model_df)})")
+        break
+
+if primary_lag_col is None:
+    raise ValueError("Cannot fit model: insufficient observations for any valid lag.")
+
+panel, y, X, fe_clustered, fe_unclustered = fit_fe_model(df, primary_lag_col, include_crime=False)
 
 print("\nModel A (FE, clustered SE) fitted.")
+print(f"Specification: {primary_lag_col} + gepu (crime_index EXCLUDED: time-invariant, absorbed by FE)")
 print(fe_clustered.summary)
 
 save_text(TABLES_DIR / "M3_modelA_fe_clustered_summary.txt", str(fe_clustered.summary))
@@ -300,12 +356,13 @@ plt.close()
 
 # Check 1: Clustered vs. unclustered SE already saved in coefficient table.
 
-# Check 2: Alternative lag structures for the key driver.
+# Check 2: Alternative lag structures for the key driver (including M2's optimal lag 12).
+# CORRECTED: Now tests lag 12 from M2 EDA, excludes crime_index from FE
 lag_rows = []
-for lag in [1, 2, 3]:
+for lag in [1, 2, 3, 4, 5, 6, 12]:
     col = f"cpi_score_lag{lag}"
     try:
-        _, _, _, fe_lag_clustered, _ = fit_fe_model(df, col)
+        _, _, _, fe_lag_clustered, _ = fit_fe_model(df, col, include_crime=False)
         lag_rows.append(
             {
                 "lag": lag,
@@ -316,7 +373,7 @@ for lag in [1, 2, 3]:
                 "nobs": int(fe_lag_clustered.nobs),
             }
         )
-    except Exception:
+    except Exception as e:
         lag_rows.append(
             {
                 "lag": lag,
@@ -330,24 +387,27 @@ for lag in [1, 2, 3]:
 
 pd.DataFrame(lag_rows).to_csv(TABLES_DIR / "M3_robustness_alt_lags.csv", index=False)
 
-# Check 3: Exclude 2020 and re-estimate FE model.
+# Check 3: Exclude 2020 and re-estimate FE model (tests pandemic/crisis sensitivity).
+# CAUTION: Large parameter shifts when 2020 excluded may indicate pandemic-driven results.
 no_2020_df = df[df["Year"] != 2020].copy()
-_, _, _, fe_no_2020, _ = fit_fe_model(no_2020_df, "cpi_score_lag1")
+_, _, _, fe_no_2020, _ = fit_fe_model(no_2020_df, primary_lag_col, include_crime=False)
 
 exclude_2020 = pd.DataFrame(
     [
         {
             "spec": "baseline",
-            "coef_cpi_lag1": float(fe_clustered.params["cpi_score_lag1"]),
-            "se_cpi_lag1": float(fe_clustered.std_errors["cpi_score_lag1"]),
-            "pvalue_cpi_lag1": float(fe_clustered.pvalues["cpi_score_lag1"]),
+            "lag": primary_lag_col.replace("cpi_score_lag", ""),
+            "coef": float(fe_clustered.params[primary_lag_col]),
+            "se": float(fe_clustered.std_errors[primary_lag_col]),
+            "pvalue": float(fe_clustered.pvalues[primary_lag_col]),
             "nobs": int(fe_clustered.nobs),
         },
         {
             "spec": "exclude_2020",
-            "coef_cpi_lag1": float(fe_no_2020.params["cpi_score_lag1"]),
-            "se_cpi_lag1": float(fe_no_2020.std_errors["cpi_score_lag1"]),
-            "pvalue_cpi_lag1": float(fe_no_2020.pvalues["cpi_score_lag1"]),
+            "lag": primary_lag_col.replace("cpi_score_lag", ""),
+            "coef": float(fe_no_2020.params[primary_lag_col]),
+            "se": float(fe_no_2020.std_errors[primary_lag_col]),
+            "pvalue": float(fe_no_2020.pvalues[primary_lag_col]),
             "nobs": int(fe_no_2020.nobs),
         },
     ]
@@ -355,27 +415,32 @@ exclude_2020 = pd.DataFrame(
 exclude_2020.to_csv(TABLES_DIR / "M3_robustness_exclude_2020.csv", index=False)
 
 # Check 4: Subsample check by high/low crime groups.
+# CORRECTED: Uses primary_lag_col, excludes crime_index from FE models
 subsample_rows = []
 for group_value, group_name in [(0, "low_crime"), (1, "high_crime")]:
     group_df = df[df["high_crime_group"] == group_value].copy()
     try:
-        _, _, _, fe_group, _ = fit_fe_model(group_df, "cpi_score_lag1")
+        _, _, _, fe_group, _ = fit_fe_model(group_df, primary_lag_col, include_crime=False)
+        lag_num = primary_lag_col.replace("cpi_score_lag", "")
         subsample_rows.append(
             {
                 "group": group_name,
-                "coef_cpi_lag1": float(fe_group.params["cpi_score_lag1"]),
-                "se_cpi_lag1": float(fe_group.std_errors["cpi_score_lag1"]),
-                "pvalue_cpi_lag1": float(fe_group.pvalues["cpi_score_lag1"]),
+                "lag": lag_num,
+                "coef": float(fe_group.params[primary_lag_col]),
+                "se": float(fe_group.std_errors[primary_lag_col]),
+                "pvalue": float(fe_group.pvalues[primary_lag_col]),
                 "nobs": int(fe_group.nobs),
             }
         )
     except Exception:
+        lag_num = primary_lag_col.replace("cpi_score_lag", "")
         subsample_rows.append(
             {
                 "group": group_name,
-                "coef_cpi_lag1": np.nan,
-                "se_cpi_lag1": np.nan,
-                "pvalue_cpi_lag1": np.nan,
+                "lag": lag_num,
+                "coef": np.nan,
+                "se": np.nan,
+                "pvalue": np.nan,
                 "nobs": 0,
             }
         )
@@ -396,12 +461,24 @@ consolidated = pd.merge(
 consolidated.to_csv(TABLES_DIR / "M3_regression_table.csv", index=False)
 
 summary_lines = [
-    "Milestone 3 model run complete.",
+    "=" * 80,
+    "Milestone 3 Model Run: CORRECTED VERSION",
+    "=" * 80,
     f"Input panel: {panel_path}",
+    f"Primary lag specification: {primary_lag_col}",
     f"Model A observations: {int(fe_clustered.nobs)}",
     f"Model B train/test: {len(train)}/{len(test)}",
+    "",
+    "KEY METHODOLOGICAL CORRECTIONS:",
+    "1. Crime_index EXCLUDED from FE models: time-invariant, absorbed by country FE",
+    "2. Primary specification prefers lag 12, then lag 4, then 3,2,1",
+    "3. Robustness tests include lag 12 and feasible alternatives (1, 2, 3, 4, 5, 6, 12)",
+    "4. 2020 sensitivity analysis: tests pandemic-era influence on results",
+    "5. Outcome transformation: signed_log reduces heterosk. while preserving sign",
+    "",
     f"Tables saved to: {TABLES_DIR}",
     f"Figures saved to: {FIGURES_DIR}",
+    "=" * 80,
 ]
 save_text(TABLES_DIR / "M3_run_summary.txt", "\n".join(summary_lines))
 

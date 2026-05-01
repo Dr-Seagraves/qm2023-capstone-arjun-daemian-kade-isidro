@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from linearmodels.panel import PanelOLS
+from linearmodels.panel.utility import AbsorbingEffectWarning
 from scipy import stats
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
@@ -35,6 +36,7 @@ from fetch_crime_index_code.config_paths import FINAL_DATA_DIR, FIGURES_DIR, TAB
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=AbsorbingEffectWarning)
 
 
 # -----------------------------------------------------------------------------
@@ -115,6 +117,8 @@ df = raw.dropna(subset=["foreign_investment", "cpi_score", "crime_index", "gepu"
 # Signed log transform handles potentially negative FDI while reducing skew.
 df["fdi_slog"] = signed_log1p(df["foreign_investment"])
 
+PRIMARY_LAG_YEARS = 3
+
 for lag in [1, 2, 3]:
     df[f"cpi_score_lag{lag}"] = df.groupby("Country")["cpi_score"].shift(lag)
 
@@ -130,7 +134,8 @@ print(f"Countries: {df['Country'].nunique()}, Years: {df['Year'].min()}-{df['Yea
 # Section 3: Model A - Fixed Effects regression (required)
 # -----------------------------------------------------------------------------
 
-panel, y, X, fe_clustered, fe_unclustered = fit_fe_model(df, "cpi_score_lag1")
+primary_lag_col = f"cpi_score_lag{PRIMARY_LAG_YEARS}"
+panel, y, X, fe_clustered, fe_unclustered = fit_fe_model(df, primary_lag_col)
 
 print("\nModel A (FE, clustered SE) fitted.")
 print(fe_clustered.summary)
@@ -183,7 +188,7 @@ fit_stats.to_csv(TABLES_DIR / "M3_modelA_fit_statistics.csv", index=False)
 ml_df = df[[
     "Year",
     "fdi_slog",
-    "cpi_score_lag1",
+    primary_lag_col,
     "crime_index",
     "gepu",
 ]].dropna().copy()
@@ -194,7 +199,7 @@ cutoff = max_year - 1
 train = ml_df[ml_df["Year"] < cutoff].copy()
 test = ml_df[ml_df["Year"] >= cutoff].copy()
 
-feature_cols = ["cpi_score_lag1", "crime_index", "gepu"]
+feature_cols = [primary_lag_col, "crime_index", "gepu"]
 X_train = train[feature_cols]
 X_test = test[feature_cols]
 y_train = train["fdi_slog"]
@@ -332,24 +337,24 @@ pd.DataFrame(lag_rows).to_csv(TABLES_DIR / "M3_robustness_alt_lags.csv", index=F
 
 # Check 3: Exclude 2020 and re-estimate FE model.
 no_2020_df = df[df["Year"] != 2020].copy()
-_, _, _, fe_no_2020, _ = fit_fe_model(no_2020_df, "cpi_score_lag1")
+_, _, _, fe_no_2020, _ = fit_fe_model(no_2020_df, primary_lag_col)
 
 exclude_2020 = pd.DataFrame(
     [
         {
-            "spec": "baseline",
-            "coef_cpi_lag1": float(fe_clustered.params["cpi_score_lag1"]),
-            "se_cpi_lag1": float(fe_clustered.std_errors["cpi_score_lag1"]),
-            "pvalue_cpi_lag1": float(fe_clustered.pvalues["cpi_score_lag1"]),
-            "nobs": int(fe_clustered.nobs),
-        },
-        {
-            "spec": "exclude_2020",
-            "coef_cpi_lag1": float(fe_no_2020.params["cpi_score_lag1"]),
-            "se_cpi_lag1": float(fe_no_2020.std_errors["cpi_score_lag1"]),
-            "pvalue_cpi_lag1": float(fe_no_2020.pvalues["cpi_score_lag1"]),
-            "nobs": int(fe_no_2020.nobs),
-        },
+                "spec": "baseline",
+                f"coef_{primary_lag_col}": float(fe_clustered.params[primary_lag_col]),
+                f"se_{primary_lag_col}": float(fe_clustered.std_errors[primary_lag_col]),
+                f"pvalue_{primary_lag_col}": float(fe_clustered.pvalues[primary_lag_col]),
+                "nobs": int(fe_clustered.nobs),
+            },
+            {
+                "spec": "exclude_2020",
+                f"coef_{primary_lag_col}": float(fe_no_2020.params[primary_lag_col]),
+                f"se_{primary_lag_col}": float(fe_no_2020.std_errors[primary_lag_col]),
+                f"pvalue_{primary_lag_col}": float(fe_no_2020.pvalues[primary_lag_col]),
+                "nobs": int(fe_no_2020.nobs),
+            },
     ]
 )
 exclude_2020.to_csv(TABLES_DIR / "M3_robustness_exclude_2020.csv", index=False)
@@ -359,13 +364,13 @@ subsample_rows = []
 for group_value, group_name in [(0, "low_crime"), (1, "high_crime")]:
     group_df = df[df["high_crime_group"] == group_value].copy()
     try:
-        _, _, _, fe_group, _ = fit_fe_model(group_df, "cpi_score_lag1")
+        _, _, _, fe_group, _ = fit_fe_model(group_df, primary_lag_col)
         subsample_rows.append(
             {
                 "group": group_name,
-                "coef_cpi_lag1": float(fe_group.params["cpi_score_lag1"]),
-                "se_cpi_lag1": float(fe_group.std_errors["cpi_score_lag1"]),
-                "pvalue_cpi_lag1": float(fe_group.pvalues["cpi_score_lag1"]),
+                f"coef_{primary_lag_col}": float(fe_group.params[primary_lag_col]),
+                f"se_{primary_lag_col}": float(fe_group.std_errors[primary_lag_col]),
+                f"pvalue_{primary_lag_col}": float(fe_group.pvalues[primary_lag_col]),
                 "nobs": int(fe_group.nobs),
             }
         )
@@ -373,9 +378,9 @@ for group_value, group_name in [(0, "low_crime"), (1, "high_crime")]:
         subsample_rows.append(
             {
                 "group": group_name,
-                "coef_cpi_lag1": np.nan,
-                "se_cpi_lag1": np.nan,
-                "pvalue_cpi_lag1": np.nan,
+                f"coef_{primary_lag_col}": np.nan,
+                f"se_{primary_lag_col}": np.nan,
+                f"pvalue_{primary_lag_col}": np.nan,
                 "nobs": 0,
             }
         )

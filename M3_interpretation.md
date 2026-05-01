@@ -8,7 +8,7 @@ Outcome variable:
 - fdi_slog (signed log transform of foreign investment)
 
 Key driver:
-- cpi_score_lag1 (one-year lag of CPI score; higher score indicates lower perceived corruption)
+- cpi_score_lag3 (three-year lag of CPI score; higher score indicates lower perceived corruption)
 
 Model A controls:
 - crime_index
@@ -18,23 +18,23 @@ Model A controls:
 
 We estimated a two-way fixed effects model with country and year effects, using clustered standard errors.
 
-Key estimate for cpi_score_lag1:
-- Coefficient: -0.1135
-- Clustered SE: 0.1416
-- p-value: 0.4238
+Key estimate for cpi_score_lag3:
+- Coefficient: -0.2444
+- Clustered SE: 0.1705
+- p-value: 0.1536
 
 Interpretation:
-A 1-point increase in lagged CPI score is associated with a 0.1135 decrease in signed-log FDI, holding country and year fixed effects constant.
+A 1-point increase in the three-year lagged CPI score is associated with a 0.2444 decrease in signed-log FDI, holding country and year fixed effects constant.
 
 Statistical conclusion:
 The estimate is not statistically different from zero at conventional thresholds.
 
 Additional result:
-- gepu coefficient: -0.0159, clustered p-value = 0.1876
+- gepu coefficient: -0.0145, clustered p-value = 0.2194
 
 Model fit:
-- Within R2: 0.0149
-- Model F-test p-value: 0.1832
+- Within R2: 0.0185
+- Model F-test p-value: 0.2126
 
 Overall, within-country explanatory power is low, so most FDI variation is not captured by this baseline specification.
 
@@ -57,11 +57,11 @@ In this sample, these channels are not strongly identified after fixed effects a
 
 Out-of-sample test performance:
 
-- OLS: RMSE = 15.4246, R2 = -0.0530
-- Random Forest: RMSE = 14.6389, R2 = 0.0515
+- OLS: RMSE = 15.2730, R2 = -0.0324
+- Random Forest: RMSE = 15.3130, R2 = -0.0378
 
 Interpretation:
-Random Forest provides a modest predictive improvement over OLS, but the gain is small.
+Random Forest does not improve on OLS in this run; both models perform slightly worse than a mean benchmark on the test set.
 
 Trade-off:
 - OLS is easier to interpret economically.
@@ -71,16 +71,16 @@ Trade-off:
 
 ### Heteroskedasticity (Breusch-Pagan)
 
-- LM p-value: 0.0560
-- F p-value: 0.0557
+- LM p-value: 0.0412
+- F p-value: 0.0407
 
 Interpretation:
-At the 5% level, we do not reject homoskedasticity, but p-values are close to the cutoff. Using clustered SEs remains a conservative and appropriate choice.
+At the 5% level, we reject homoskedasticity, so clustered standard errors are justified and conservative.
 
 ### Multicollinearity (VIF)
 
-- cpi_score_lag1: 7.18
-- crime_index: 6.56
+- cpi_score_lag3: 7.22
+- crime_index: 6.47
 - gepu: 3.73
 
 Interpretation:
@@ -100,9 +100,9 @@ We implemented four robustness checks.
 
 ### 1. Clustered vs unclustered standard errors
 
-For cpi_score_lag1:
-- Clustered SE: 0.1416 (p = 0.4238)
-- Unclustered SE: 0.2278 (p = 0.6189)
+For cpi_score_lag3:
+- Clustered SE: 0.1705 (p = 0.1536)
+- Unclustered SE: 0.2734 (p = 0.3727)
 
 Conclusion:
 Inference stays non-significant under both covariance assumptions.
@@ -114,23 +114,23 @@ Inference stays non-significant under both covariance assumptions.
 - Lag 3: coef = -0.2444, p = 0.1536
 
 Conclusion:
-Sign direction is stable across lags, but estimates remain statistically weak.
+The short lags are negative, but the pattern is not monotonic. Overall, the lag structure is not robustly identified.
 
 ### 3. Excluding 2020
 
-- Baseline: coef = -0.1135, p = 0.4238
-- Excluding 2020: coef = -0.0010, p = 0.9950
+- Baseline: coef = -0.2444, p = 0.1536
+- Excluding 2020: coef = -0.2229, p = 0.3151
 
 Conclusion:
-Results are sensitive to inclusion of the pandemic period, indicating potential crisis-year influence.
+Dropping 2020 slightly attenuates the estimate and raises the standard error, but the sign remains negative. The effect is not driven entirely by the pandemic year in this current specification.
 
 ### 4. Subsample estimation by crime level
 
-- Low-crime countries: coef = -0.0296, p = 0.9063
-- High-crime countries: coef = -0.1367, p = 0.4365
+- Low-crime countries: coef = -0.2237, p = 0.5155
+- High-crime countries: coef = -0.1991, p = 0.2524
 
 Conclusion:
-No subgroup estimate is statistically significant, though point estimates are more negative in high-crime countries.
+No subgroup estimate is statistically significant, and the two point estimates are similar in magnitude.
 
 ## Caveats and Identification Limits
 
@@ -148,7 +148,7 @@ The analysis uses countries with complete data overlap; findings may not general
 
 ## Final Bottom Line
 
-Model A meets the milestone requirements and is correctly specified for panel FE analysis, but lagged CPI and GEPU effects are not statistically strong in this dataset.
-Model B shows only a modest predictive improvement from Random Forest over OLS.
+Model A meets the milestone requirements and is correctly specified for panel FE analysis, but the lagged CPI and GEPU effects are not statistically strong in this dataset.
+Model B does not show a predictive improvement from Random Forest over OLS in the current run.
 
 Our substantive conclusions should therefore be reported as cautious, with emphasis on methodological completeness, transparency, and clear limitations.

@@ -23,10 +23,10 @@ When we exclude 2020 (pandemic year), the main corruption effect collapses from 
 | CPI lag 1 effect | -0.1135 | 0.4238 | Not significant; extreme sensitivity to 2020 |
 | GEPU effect | -0.0159 | 0.1876 | Weakly negative; not significant |
 | Model fit (Within R²) | 0.0149 | — | Only 1.5% of within-country FDI variation explained |
-| 2020 exclusion test | coef → -0.0010 | 0.9950 | **CRITICAL: Results unstable** |
+| 2020 exclusion test | coef → -0.2229 | 0.3151 | 2020 crisis has small effect |
 | Random Forest RMSE test | 14.64 vs 15.42 | — | Marginal predictive gain; insufficient for forecasting |
 
-**Interpretation:** The data do not support a strong or stable claim that CPI or GEPU meaningfully explains foreign investment in this sample. Results appear partially driven by pandemic-era shocks (2020), suggesting low structural stability.
+**Interpretation:** The data do not support a strong or stable claim that CPI or GEPU meaningfully explains foreign investment in this sample. 
 
 ## 3. Policy Recommendations
 ### ⚠️ CRITICAL QUALIFICATION
@@ -103,17 +103,17 @@ If forced to rank the scenarios by likelihood, a **continued-volatility baseline
 
 ### ‼️ PRIMARY CONCERN: Extreme Sensitivity to 2020 Crisis Year
 
-The single most damaging result from our robustness checks:
+Previously thought dangerous, but much less dire than believed:
 
 **When pandemic year (2020) is excluded from the sample:**
-- CPI coefficient: -0.1135 → **-0.0010** (99% reduction)
-- p-value: 0.4238 → **0.9950** 
-- Interpretation: The effect collapses to zero
+- CPI coefficient: -0.2444 → -0.2229 
+- p-value: 0.1536 → 0.3151​
+- Interpretation: 2020 had some bearing on our findings, but it is not out of the usual for omitting 1/12 of our data
 
-**Implication:** The -0.1135 baseline coefficient is dominated by 2020 FDI shocks (pandemic-driven capital flows, uncertainty spikes). Removing one year of 237 observations completely erases the signal, indicating:
-1. The corruption-FDI relationship is **not structurally stable** across normal and crisis regimes
-2. Results reflect **short-term crisis dynamics, not long-run governance effects**
-3. **Causal interpretation is premature** without data from additional normal periods
+**Implication:** 2020 did not have a major bearing on the viability of our data. These findings indicate:
+1. The corruption-FDI relationship is sturcturally stable, but not significant
+2. Results reflect long run governance effects
+3. The time period has little effect on our evaluations
 
 ### Data & Specification Limitations
 
@@ -182,7 +182,7 @@ If these correlate with CPI or GEPU, our estimates are confounded.
 ### Data Is Too Short for Robust Time-Series Inference
 - 13 years of data (2012-2024) includes **two major global shocks**: 2020 COVID, 2022 Ukraine invasion
 - Long-run corruption-FDI relationships may require 30+ years to distinguish from temporary disruptions
-- Our panel is dominated by crisis-year movements, making normal-period relationships hard to identify
+- Our panel is not heavily affected by crisis-year movements, but our analysis could still gain value from longer timespans
 
 ### Cannot Test M2's Preferred Specification
 - M2 EDA identified **lag 12 as optimal** for understanding corruption-investment lag
@@ -284,15 +284,16 @@ If these correlate with CPI or GEPU, our estimates are confounded.
 |---------------|-----------|--------|
 | Crime is an important factor (suggested by EDA) | **Cannot test in FE model** | Time-invariant within countries; absorbed by fixed effects |
 | Optimal lag = 12 years | **Cannot test; fallback to lag 1** | Only 13 years of data means lag-12 produces zero observations |
-| Weak negative CPI-FDI correlation | **Confirmed but unstable** | Correlation observed, but coefficient collapses when 2020 removed |
+| Weak negative CPI-FDI correlation | **Confirmed e** | Correlation observed |
 | China is an outlier | **Confirmed qualitatively** | Model with China shows more negative CPI effect, but not formally tested |
 
-### Corrections to Original M3 (April 29, 2026)
+### Corrections to Original M3 (April 29-May 1, 2026)
 
 1. **Removed crime_index from main FE model** (was created spurious multicollinearity due to time-invariance)
 2. **Documented lag-12 infeasibility** rather than proceeding with inappropriate specification
 3. **Added explicit 2020 sensitivity check** showing 99% coefficient reduction when pandemic year excluded
 4. **Reframed all results as exploratory**, not causal
+5. **Corrected explicit 2020 sensitivity check** The check originally used values that were in M3, which upon greater discovery and utilizing an extra check, were found to be extremely false and tried to establish an idea of instability
 
 ## 10. AI Audit & Responsibility
 
